@@ -1,0 +1,6 @@
+numpy
+scipy
+requests
+supabase
+python-dotenv
+beautifulsoup4
