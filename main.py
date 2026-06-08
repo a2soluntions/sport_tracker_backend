@@ -1,7 +1,6 @@
 import time
 import random
-from scraper import coletar_odds_betano
-from live_scraper import coletar_odds_ao_vivo
+from api_football_source import coletar_odds_pre_jogo_api, coletar_odds_ao_vivo_api, buscar_ligas_alvo
 from poisson_model import calcular_probabilidades_poisson
 from ev_calculator import calcular_ev
 from database_connector import gravar_oportunidade_ev, ler_configuracoes_usuario
@@ -21,16 +20,17 @@ def main():
     print("="*60)
 
     # 1. Carrega as Configurações
-    banca_usuario, ligas_alvo = ler_configuracoes_usuario()
+    banca_usuario, _ = ler_configuracoes_usuario()
+    ligas_alvo = buscar_ligas_alvo()
     print(f"[-] Configuração Ativa: Banca de R$ {banca_usuario:.2f} | Alvos: {len(ligas_alvo)} Ligas")
 
     if not ligas_alvo:
         print("\n\033[31m[X] Nenhuma liga selecionada no painel. Abortando ciclo.\033[0m")
         return
 
-    # 2. Crawler Múltiplas Ligas (Pré-Jogo e Ao Vivo)
-    jogos_pre_match = coletar_odds_betano(ligas_alvo)
-    jogos_ao_vivo = coletar_odds_ao_vivo(["https://br.betano.com/live/"])
+    # 2. Obtenção de odds via API-Sports (Pré-Jogo e Ao Vivo)
+    jogos_pre_match = coletar_odds_pre_jogo_api(ligas_alvo)
+    jogos_ao_vivo = coletar_odds_ao_vivo_api(ligas_alvo)
     
     jogos_raspados = jogos_pre_match + jogos_ao_vivo
     
