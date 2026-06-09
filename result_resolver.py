@@ -1,6 +1,7 @@
 import os
 import re
 import requests
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -27,6 +28,9 @@ if not api_football_key:
 supabase: Client = create_client(supabase_url, supabase_key)
 API_HOST = "https://v3.football.api-sports.io"
 
+# Cache global de fixtures por data
+fixtures_cache = {}
+
 def limpar_nome_time(nome):
     """Remove espaços, acentos comuns e converte para minúsculo para comparação flexível"""
     nome = nome.lower().strip()
@@ -43,29 +47,63 @@ def limpar_nome_time(nome):
     return nome.strip()
 
 def buscar_partidas_api(data_iso):
-    """Busca todas as partidas da API-Football para uma determinada data (formato YYYY-MM-DD)"""
-    url = f"{API_HOST}/fixtures?date={data_iso}"
+    """Busca todas as partidas da API-Football para uma determinada data no fuso de Brasília"""
+    url = f"{API_HOST}/fixtures?date={data_iso}&timezone=America/Sao_Paulo"
     headers = {"x-apisports-key": api_football_key}
     try:
         response = requests.get(url, headers=headers, timeout=15)
         if response.status_code == 200:
             data = response.json()
             if data.get("errors") and len(data["errors"]) > 0:
-                print(f"[API] Erros retornados pela API: {data['errors']}")
+                print(f"[API] Erros retornados pela API para a data {data_iso}: {data['errors']}")
             return data.get("response", [])
         else:
-            print(f"[API] Erro HTTP {response.status_code} ao buscar fixtures.")
+            print(f"[API] Erro HTTP {response.status_code} ao buscar fixtures da data {data_iso}.")
     except Exception as e:
-        print(f"[API] Falha de conexão: {e}")
+        print(f"[API] Falha de conexão na data {data_iso}: {e}")
     return []
 
-def resolver_oportunidade(row, fixtures):
-    """Analisa uma oportunidade pendente contra a lista de partidas finalizadas da API"""
+def obter_fixtures_data(data_iso):
+    """Retorna fixtures da data usando cache local"""
+    if data_iso not in fixtures_cache:
+        fixtures_cache[data_iso] = buscar_partidas_api(data_iso)
+    return fixtures_cache[data_iso]
+
+def get_brazil_date(created_at_str):
+    """Converte o timestamp UTC do created_at do Supabase para a data local em formato YYYY-MM-DD (America/Sao_Paulo)"""
+    try:
+        # Formato esperado: '2026-06-09T01:30:00.123+00:00' ou similar
+        clean_str = created_at_str.split(".")[0].replace("Z", "").split("+")[0]
+        dt = datetime.strptime(clean_str[:19], "%Y-%m-%dT%H:%M:%S")
+        # Subtrai 3 horas para fuso brasileiro padrão (UTC-3)
+        dt_br = dt - timedelta(hours=3)
+        return dt_br.strftime("%Y-%m-%d")
+    except Exception as e:
+        print(f"[-] Erro ao converter data created_at ({created_at_str}): {e}")
+        return created_at_str[:10]
+
+def encontrar_partida_em_lista(home_previsto, away_previsto, fixtures):
+    """Varre uma lista de fixtures tentando encontrar o confronto correspondente"""
+    for f in fixtures:
+        home_api = limpar_nome_time(f["teams"]["home"]["name"])
+        away_api = limpar_nome_time(f["teams"]["away"]["name"])
+        
+        # Comparação flexível (se um nome contém o outro ou são muito parecidos)
+        if (home_previsto in home_api or home_api in home_previsto) and \
+           (away_previsto in away_api or away_api in away_previsto):
+            return f
+    return None
+
+def resolver_oportunidade(row):
+    """Analisa uma oportunidade pendente contra a lista de partidas da data correspondente (e vizinhas se necessário)"""
     confronto = row.get("confronto", "")
     mercado = row.get("mercado", "")
+    created_at = row.get("created_at", "")
     
-    # Limpar confronto e separar times (ex: "Flamengo x Palmeiras")
-    # Trata tags de live ex: "[LIVE|45|0-0] Flamengo x Palmeiras"
+    # 1. Obter a data do jogo em fuso brasileiro (America/Sao_Paulo)
+    data_br = get_brazil_date(created_at)
+    
+    # Limpar confronto e separar times (ex: "Flamengo x Vasco")
     confronto_limpo = re.sub(r'^\[.*?\]\s*', '', confronto)
     partes = confronto_limpo.split(" x ")
     if len(partes) != 2:
@@ -75,25 +113,32 @@ def resolver_oportunidade(row, fixtures):
     home_previsto = limpar_nome_time(partes[0])
     away_previsto = limpar_nome_time(partes[1])
     
-    # Achar o jogo correspondente nas fixtures da API
-    match_found = None
-    for f in fixtures:
-        home_api = limpar_nome_time(f["teams"]["home"]["name"])
-        away_api = limpar_nome_time(f["teams"]["away"]["name"])
-        
-        # Comparação flexível (se um nome contém o outro ou são muito parecidos)
-        if (home_previsto in home_api or home_api in home_previsto) and \
-           (away_previsto in away_api or away_api in away_previsto):
-            match_found = f
-            break
-            
+    # 2. Tentar buscar o jogo na data brasileira local (D)
+    fixtures_d = obter_fixtures_data(data_br)
+    match_found = encontrar_partida_em_lista(home_previsto, away_previsto, fixtures_d)
+    
+    # 3. Fallback: Se não achar, tenta D-1 (jogo pode ter começado no dia anterior fuso-horário)
     if not match_found:
+        dt = datetime.strptime(data_br, "%Y-%m-%d")
+        data_br_minus = (dt - timedelta(days=1)).strftime("%Y-%m-%d")
+        fixtures_minus = obter_fixtures_data(data_br_minus)
+        match_found = encontrar_partida_em_lista(home_previsto, away_previsto, fixtures_minus)
+        
+    # 4. Fallback: Se ainda não achar, tenta D+1 (pre-match alert feito no dia anterior)
+    if not match_found:
+        dt = datetime.strptime(data_br, "%Y-%m-%d")
+        data_br_plus = (dt + timedelta(days=1)).strftime("%Y-%m-%d")
+        fixtures_plus = obter_fixtures_data(data_br_plus)
+        match_found = encontrar_partida_em_lista(home_previsto, away_previsto, fixtures_plus)
+        
+    if not match_found:
+        print(f"[-] Confronto '{confronto}' não encontrado nos dias vizinhos ao registro ({data_br}).")
         return None, None
         
     status_api = match_found["fixture"]["status"]["short"]
     # Verificar se a partida já foi concluída
     if status_api not in ["FT", "AET", "PEN"]:
-        print(f"[-] Partida {confronto} encontrada, mas ainda está com status: {status_api}")
+        print(f"[-] Partida {confronto} encontrada, mas ainda não concluída. Status atual: {status_api}")
         return None, None
         
     goals_home = match_found["goals"]["home"]
@@ -107,16 +152,13 @@ def resolver_oportunidade(row, fixtures):
     
     # 1. Resolver Mercado de Vitória (ex: "Vitória do Flamengo")
     if "Vitoria do" in mercado or "Vitória do" in mercado or "Vencedor" in mercado:
-        # Extrair time vencedor previsto
-        time_vencedor_previsto = limpar_nome_time(mercado.replace("Vitória do ", "").replace("Vitoria do ", ""))
+        time_vencedor_previsto = limpar_nome_time(mercado.replace("Vitória do ", "").replace("Vitoria do ", "").replace("Vencedor: ", ""))
         
         if goals_home > goals_away:
-            # Venceu o time da casa
             real_winner = limpar_nome_time(match_found["teams"]["home"]["name"])
             if time_vencedor_previsto in real_winner or real_winner in time_vencedor_previsto:
                 outcome = "green"
         elif goals_away > goals_home:
-            # Venceu o time de fora
             real_winner = limpar_nome_time(match_found["teams"]["away"]["name"])
             if time_vencedor_previsto in real_winner or real_winner in time_vencedor_previsto:
                 outcome = "green"
@@ -156,36 +198,18 @@ def main():
         
     print(f"[-] Encontradas {len(pending_opps)} oportunidades pendentes para resolução.")
     
-    # Agrupar oportunidades pendentes por data para otimizar chamadas de API
-    opps_por_data = {}
+    # Processar cada oportunidade com busca por vizinhança de data
     for opp in pending_opps:
-        # Formato ISO date: created_at é ex '2026-05-23T20:27:23...' -> '2026-05-23'
-        data_jogo = opp.get("created_at", "")[:10]
-        if data_jogo:
-            if data_jogo not in opps_por_data:
-                opps_por_data[data_jogo] = []
-            opps_por_data[data_jogo].append(opp)
-            
-    # Processar cada data
-    for data_iso, opps in opps_por_data.items():
-        print(f"\n[-] Buscando partidas da data: {data_iso}...")
-        fixtures = buscar_partidas_api(data_iso)
-        if not fixtures:
-            print(f"[-] Nenhuma partida retornada pela API para a data {data_iso}. Pulando...")
-            continue
-            
-        print(f"[OK] Recebidas {len(fixtures)} partidas da API. Resolvendo palpites...")
-        for opp in opps:
-            outcome, placar = resolver_oportunidade(opp, fixtures)
-            if outcome:
-                # Atualizar no Supabase
-                try:
-                    supabase.table("ev_opportunities").update({
-                        "resultado": outcome,
-                        "placar_final": placar
-                    }).eq("id", opp["id"]).execute()
-                except Exception as err:
-                    print(f"[X] Erro ao atualizar ID {opp['id']} no Supabase: {err}")
+        outcome, placar = resolver_oportunidade(opp)
+        if outcome:
+            # Atualizar no Supabase
+            try:
+                supabase.table("ev_opportunities").update({
+                    "resultado": outcome,
+                    "placar_final": placar
+                }).eq("id", opp["id"]).execute()
+            except Exception as err:
+                print(f"[X] Erro ao atualizar ID {opp['id']} no Supabase: {err}")
                     
     print("\n" + "="*60)
     print(" RESOLUÇÃO DE RESULTADOS FINALIZADA ".center(60, "="))
