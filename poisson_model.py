@@ -32,6 +32,9 @@ def calcular_probabilidades_poisson(xg_casa: float, xg_fora: float, tempo_decorr
     prob_under_25 = 0
     prob_over_25 = 0
     
+    prob_ah_casa_minus_15 = 0
+    prob_ah_fora_plus_15 = 0
+    
     for gols_casa_r in range(max_gols_restantes):
         for gols_fora_r in range(max_gols_restantes):
             probabilidade = matriz_probabilidades[gols_casa_r, gols_fora_r]
@@ -53,10 +56,17 @@ def calcular_probabilidades_poisson(xg_casa: float, xg_fora: float, tempo_decorr
                 prob_under_25 += probabilidade
             else:
                 prob_over_25 += probabilidade
+
+            # Asian Handicap Casa -1.5 e Fora +1.5
+            if (placar_final_casa - placar_final_fora) >= 2:
+                prob_ah_casa_minus_15 += probabilidade
+            if (placar_final_casa - placar_final_fora) <= 1:
+                prob_ah_fora_plus_15 += probabilidade
     
     # 4. NORMALIZAÇÃO (Garantir 100%)
     total_1x2 = prob_vitoria_casa + prob_empate + prob_vitoria_fora
     total_gols = prob_under_25 + prob_over_25
+    total_ah = prob_ah_casa_minus_15 + prob_ah_fora_plus_15
     
     p_casa_pct = (prob_vitoria_casa / total_1x2) * 100
     p_empate_pct = (prob_empate / total_1x2) * 100
@@ -64,6 +74,13 @@ def calcular_probabilidades_poisson(xg_casa: float, xg_fora: float, tempo_decorr
     
     p_under_25_pct = (prob_under_25 / total_gols) * 100
     p_over_25_pct = (prob_over_25 / total_gols) * 100
+
+    sum_dnb = prob_vitoria_casa + prob_vitoria_fora
+    p_dnb_casa_pct = (prob_vitoria_casa / sum_dnb) * 100 if sum_dnb > 0 else 0
+    p_dnb_fora_pct = (prob_vitoria_fora / sum_dnb) * 100 if sum_dnb > 0 else 0
+
+    p_ah_casa_minus_15_pct = (prob_ah_casa_minus_15 / total_ah) * 100 if total_ah > 0 else 0
+    p_ah_fora_plus_15_pct = (prob_ah_fora_plus_15 / total_ah) * 100 if total_ah > 0 else 0
     
     return {
         "prob_casa_pct": p_casa_pct,
@@ -76,7 +93,17 @@ def calcular_probabilidades_poisson(xg_casa: float, xg_fora: float, tempo_decorr
         "prob_under_25_pct": p_under_25_pct,
         "prob_over_25_pct": p_over_25_pct,
         "odd_justa_under_25": 100 / max(0.01, p_under_25_pct),
-        "odd_justa_over_25": 100 / max(0.01, p_over_25_pct)
+        "odd_justa_over_25": 100 / max(0.01, p_over_25_pct),
+
+        "prob_dnb_casa_pct": p_dnb_casa_pct,
+        "prob_dnb_fora_pct": p_dnb_fora_pct,
+        "odd_justa_dnb_casa": 100 / max(0.01, p_dnb_casa_pct),
+        "odd_justa_dnb_fora": 100 / max(0.01, p_dnb_fora_pct),
+
+        "prob_ah_casa_minus_15_pct": p_ah_casa_minus_15_pct,
+        "prob_ah_fora_plus_15_pct": p_ah_fora_plus_15_pct,
+        "odd_justa_ah_casa_minus_15": 100 / max(0.01, p_ah_casa_minus_15_pct),
+        "odd_justa_ah_fora_plus_15": 100 / max(0.01, p_ah_fora_plus_15_pct)
     }
 
 if __name__ == "__main__":

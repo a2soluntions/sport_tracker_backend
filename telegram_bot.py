@@ -40,20 +40,29 @@ def enviar_alerta_telegram(confronto, campeonato, mercado, odd_oferecida, odd_ju
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
     # Formatação Visual da Mensagem
-    header = "🔴 AO VIVO - URGENTE!" if is_live else "⚽ PRÉ-JOGO ENCONTRADO!"
+    header = "🔴 <b>SINAL AO VIVO DETECTADO!</b>" if is_live else "⚽ <b>NOVO PALPITE PRÉ-JOGO!</b>"
     
-    mensagem = f"""
-{header}
-🏆 {campeonato}
-⚔️ {confronto}
+    # Extrair a porcentagem da aposta sugerida se vier no formato "R$ X.XX (Y.Y%)" ou similar
+    pct_stake = aposta_sugerida
+    if "(" in aposta_sugerida and "%" in aposta_sugerida:
+        try:
+            # Extrai apenas o valor dentro dos parênteses
+            pct_stake = aposta_sugerida.split("(")[1].split(")")[0]
+        except:
+            pass
 
-📊 Mercado: {mercado}
-🎯 Odd Casa de Apostas: {odd_oferecida}
-⚖️ Odd Justa (Nosso Cálculo): {odd_justa}
-🔥 Vantagem (EV): +{ev:.2f}%
+    mensagem = f"""{header}
 
-💰 Ação Sugerida: Apostar {aposta_sugerida}
-    """
+🏆 <b>{campeonato}</b>
+⚔️ <b>{confronto}</b>
+
+🎯 <b>Mercado:</b> {mercado}
+📈 <b>Odd recomendada:</b> {odd_oferecida}
+⚖️ <b>Odd justa calculada:</b> {odd_justa}
+🔥 <b>Vantagem (EV):</b> +{ev:.2f}%
+
+🛡️ <b>Gestão de Risco sugerida:</b> {pct_stake} da sua banca
+"""
 
     sucesso_geral = True
     for chat_id in clientes:

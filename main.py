@@ -131,6 +131,98 @@ def main():
                 ev_decimal=resultado_ev_gols['ev'],
                 is_live=jogo.get('is_live', False)
             )
+
+        # --- AVALIAÇÃO MERCADO 3: DRAW NO BET (EMPATE ANULA) CASA ---
+        odd_dnb_casa = jogo.get('odd_dnb_casa')
+        if odd_dnb_casa:
+            odd_justa_dnb_c = odds_justas['odd_justa_dnb_casa']
+            prob_dnb_c_pct = odds_justas['prob_dnb_casa_pct']
+            resultado_ev_dnb_c = calcular_ev(odd_casa=odd_dnb_casa, probabilidade_calculada_pct=prob_dnb_c_pct)
+            
+            if resultado_ev_dnb_c['ev'] > 0:
+                print(f"\033[92m[$$$] ALERTA (DNB CASA): ODD {odd_dnb_casa} | JUSTA: {odd_justa_dnb_c:.2f} | EV: +{resultado_ev_dnb_c['ev']}\033[0m")
+                stake_info_dnb_c = calcular_criterio_kelly(odd_dnb_casa, prob_dnb_c_pct, 0.25)
+                pct_dnb_c = stake_info_dnb_c['porcentagem_banca_ajustada']
+                texto_stake_dnb_c = f"R$ {banca_usuario * (pct_dnb_c / 100.0):.2f} ({pct_dnb_c:.1f}%)"
+                
+                time_casa = jogo['confronto'].split(' x ')[0]
+                gravar_oportunidade_ev(
+                    dados_jogo=jogo,
+                    mercado_nome=f"Empate Anula: Vitória do {time_casa}",
+                    odd_mercado=odd_dnb_casa,
+                    odd_justa=round(odd_justa_dnb_c, 2),
+                    ev_calculado=resultado_ev_dnb_c['ev'],
+                    texto_stake=texto_stake_dnb_c
+                )
+
+        # --- AVALIAÇÃO MERCADO 4: DRAW NO BET (EMPATE ANULA) FORA ---
+        odd_dnb_fora = jogo.get('odd_dnb_fora')
+        if odd_dnb_fora:
+            odd_justa_dnb_f = odds_justas['odd_justa_dnb_fora']
+            prob_dnb_f_pct = odds_justas['prob_dnb_fora_pct']
+            resultado_ev_dnb_f = calcular_ev(odd_casa=odd_dnb_fora, probabilidade_calculada_pct=prob_dnb_f_pct)
+            
+            if resultado_ev_dnb_f['ev'] > 0:
+                print(f"\033[92m[$$$] ALERTA (DNB FORA): ODD {odd_dnb_fora} | JUSTA: {odd_justa_dnb_f:.2f} | EV: +{resultado_ev_dnb_f['ev']}\033[0m")
+                stake_info_dnb_f = calcular_criterio_kelly(odd_dnb_fora, prob_dnb_f_pct, 0.25)
+                pct_dnb_f = stake_info_dnb_f['porcentagem_banca_ajustada']
+                texto_stake_dnb_f = f"R$ {banca_usuario * (pct_dnb_f / 100.0):.2f} ({pct_dnb_f:.1f}%)"
+                
+                time_fora = jogo['confronto'].split(' x ')[1]
+                gravar_oportunidade_ev(
+                    dados_jogo=jogo,
+                    mercado_nome=f"Empate Anula: Vitória do {time_fora}",
+                    odd_mercado=odd_dnb_fora,
+                    odd_justa=round(odd_justa_dnb_f, 2),
+                    ev_calculado=resultado_ev_dnb_f['ev'],
+                    texto_stake=texto_stake_dnb_f
+                )
+
+        # --- AVALIAÇÃO MERCADO 5: HANDICAP ASIÁTICO -1.5 CASA ---
+        odd_ah_c_minus_15 = jogo.get('odd_ah_casa_minus_15')
+        if odd_ah_c_minus_15:
+            odd_justa_ah_c = odds_justas['odd_justa_ah_casa_minus_15']
+            prob_ah_c_pct = odds_justas['prob_ah_casa_minus_15_pct']
+            resultado_ev_ah_c = calcular_ev(odd_casa=odd_ah_c_minus_15, probabilidade_calculada_pct=prob_ah_c_pct)
+            
+            if resultado_ev_ah_c['ev'] > 0:
+                print(f"\033[92m[$$$] ALERTA (AH CASA -1.5): ODD {odd_ah_c_minus_15} | JUSTA: {odd_justa_ah_c:.2f} | EV: +{resultado_ev_ah_c['ev']}\033[0m")
+                stake_info_ah_c = calcular_criterio_kelly(odd_ah_c_minus_15, prob_ah_c_pct, 0.25)
+                pct_ah_c = stake_info_ah_c['porcentagem_banca_ajustada']
+                texto_stake_ah_c = f"R$ {banca_usuario * (pct_ah_c / 100.0):.2f} ({pct_ah_c:.1f}%)"
+                
+                time_casa = jogo['confronto'].split(' x ')[0]
+                gravar_oportunidade_ev(
+                    dados_jogo=jogo,
+                    mercado_nome=f"Handicap: {time_casa} -1.5",
+                    odd_mercado=odd_ah_c_minus_15,
+                    odd_justa=round(odd_justa_ah_c, 2),
+                    ev_calculado=resultado_ev_ah_c['ev'],
+                    texto_stake=texto_stake_ah_c
+                )
+
+        # --- AVALIAÇÃO MERCADO 6: HANDICAP ASIÁTICO +1.5 FORA ---
+        odd_ah_f_plus_15 = jogo.get('odd_ah_fora_plus_15')
+        if odd_ah_f_plus_15:
+            odd_justa_ah_f = odds_justas['odd_justa_ah_fora_plus_15']
+            prob_ah_f_pct = odds_justas['prob_ah_fora_plus_15_pct']
+            resultado_ev_ah_f = calcular_ev(odd_casa=odd_ah_f_plus_15, probabilidade_calculada_pct=prob_ah_f_pct)
+            
+            if resultado_ev_ah_f['ev'] > 0:
+                print(f"\033[92m[$$$] ALERTA (AH FORA +1.5): ODD {odd_ah_f_plus_15} | JUSTA: {odd_justa_ah_f:.2f} | EV: +{resultado_ev_ah_f['ev']}\033[0m")
+                stake_info_ah_f = calcular_criterio_kelly(odd_ah_f_plus_15, prob_ah_f_pct, 0.25)
+                pct_ah_f = stake_info_ah_f['porcentagem_banca_ajustada']
+                texto_stake_ah_f = f"R$ {banca_usuario * (pct_ah_f / 100.0):.2f} ({pct_ah_f:.1f}%)"
+                
+                time_fora = jogo['confronto'].split(' x ')[1]
+                gravar_oportunidade_ev(
+                    dados_jogo=jogo,
+                    mercado_nome=f"Handicap: {time_fora} +1.5",
+                    odd_mercado=odd_ah_f_plus_15,
+                    odd_justa=round(odd_justa_ah_f, 2),
+                    ev_calculado=resultado_ev_ah_f['ev'],
+                    texto_stake=texto_stake_ah_f
+                )
             
         time.sleep(1)
 

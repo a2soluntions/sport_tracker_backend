@@ -141,6 +141,10 @@ def coletar_odds_pre_jogo_api(ligas_alvo_ids):
                 odd_fora = None
                 odd_over_25 = None
                 odd_under_25 = None
+                odd_dnb_casa = None
+                odd_dnb_fora = None
+                odd_ah_casa_minus_15 = None
+                odd_ah_fora_plus_15 = None
                 
                 for bet in bm_selecionado.get("bets", []):
                     # Match Winner (ID 1)
@@ -159,6 +163,21 @@ def coletar_odds_pre_jogo_api(ligas_alvo_ids):
                                 odd_over_25 = float(val.get("odd"))
                             elif val.get("value") == "Under 2.5":
                                 odd_under_25 = float(val.get("odd"))
+                    # Draw No Bet (ID 2)
+                    elif bet.get("id") == 2 or bet.get("name") == "Draw No Bet":
+                        for val in bet.get("values", []):
+                            if val.get("value") == "Home":
+                                odd_dnb_casa = float(val.get("odd"))
+                            elif val.get("value") == "Away":
+                                odd_dnb_fora = float(val.get("odd"))
+                    # Asian Handicap (ID 3)
+                    elif bet.get("id") == 3 or bet.get("name") == "Asian Handicap":
+                        for val in bet.get("values", []):
+                            v = val.get("value", "")
+                            if "Home -1.5" in v:
+                                odd_ah_casa_minus_15 = float(val.get("odd"))
+                            elif "Away +1.5" in v:
+                                odd_ah_fora_plus_15 = float(val.get("odd"))
                                 
                 if odd_casa and odd_empate and odd_fora:
                     partidas_consolidadas.append({
@@ -168,7 +187,11 @@ def coletar_odds_pre_jogo_api(ligas_alvo_ids):
                         "odd_empate": odd_empate,
                         "odd_fora": odd_fora,
                         "odd_over_25": odd_over_25 if odd_over_25 else round(random.uniform(1.6, 2.5), 2),
-                        "odd_under_25": odd_under_25 if odd_under_25 else round(random.uniform(1.6, 2.5), 2)
+                        "odd_under_25": odd_under_25 if odd_under_25 else round(random.uniform(1.6, 2.5), 2),
+                        "odd_dnb_casa": odd_dnb_casa,
+                        "odd_dnb_fora": odd_dnb_fora,
+                        "odd_ah_casa_minus_15": odd_ah_casa_minus_15,
+                        "odd_ah_fora_plus_15": odd_ah_fora_plus_15
                     })
                     print(f"    [OK] Odds extraídas via {bm_selecionado['name']}: 1X2 ({odd_casa}/{odd_empate}/{odd_fora}) | O/U ({odd_over_25}/{odd_under_25})")
                 else:
@@ -247,6 +270,10 @@ def coletar_odds_ao_vivo_api(ligas_alvo_ids):
                     odd_fora = None
                     odd_over_25 = None
                     odd_under_25 = None
+                    odd_dnb_casa = None
+                    odd_dnb_fora = None
+                    odd_ah_casa_minus_15 = None
+                    odd_ah_fora_plus_15 = None
                     
                     # Extrai os mercados corretos de live odds
                     for bet in o.get("odds", []):
@@ -268,6 +295,21 @@ def coletar_odds_ao_vivo_api(ligas_alvo_ids):
                                         odd_over_25 = float(val.get("odd"))
                                     elif val.get("value") == "Under":
                                         odd_under_25 = float(val.get("odd"))
+                        # Draw No Bet (ID 60)
+                        elif bet.get("id") == 60 or bet.get("name") == "Draw No Bet":
+                            for val in bet.get("values", []):
+                                if val.get("value") == "Home":
+                                    odd_dnb_casa = float(val.get("odd"))
+                                elif val.get("value") == "Away":
+                                    odd_dnb_fora = float(val.get("odd"))
+                        # Asian Handicap (ID 61)
+                        elif bet.get("id") == 61 or bet.get("name") == "Asian Handicap":
+                            for val in bet.get("values", []):
+                                v = val.get("value", "")
+                                if "Home -1.5" in v:
+                                    odd_ah_casa_minus_15 = float(val.get("odd"))
+                                elif "Away +1.5" in v:
+                                    odd_ah_fora_plus_15 = float(val.get("odd"))
                                         
                     if odd_casa and odd_empate and odd_fora:
                         partidas_consolidadas.append({
@@ -281,7 +323,11 @@ def coletar_odds_ao_vivo_api(ligas_alvo_ids):
                             "odd_empate": odd_empate,
                             "odd_fora": odd_fora,
                             "odd_over_25": odd_over_25 if odd_over_25 else round(random.uniform(1.5, 3.0), 2),
-                            "odd_under_25": odd_under_25 if odd_under_25 else round(random.uniform(1.5, 3.0), 2)
+                            "odd_under_25": odd_under_25 if odd_under_25 else round(random.uniform(1.5, 3.0), 2),
+                            "odd_dnb_casa": odd_dnb_casa,
+                            "odd_dnb_fora": odd_dnb_fora,
+                            "odd_ah_casa_minus_15": odd_ah_casa_minus_15,
+                            "odd_ah_fora_plus_15": odd_ah_fora_plus_15
                         })
                         matched += 1
                         print(f"    [LIVE] Odds casadas para {home_team}x{away_team} ({minuto}'): 1X2 ({odd_casa}/{odd_empate}/{odd_fora}) | Over/Under 2.5 ({odd_over_25}/{odd_under_25})")

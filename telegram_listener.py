@@ -83,6 +83,70 @@ def escutar_clientes():
                                 })
                                 if not response_boas_vindas.json().get('ok'):
                                     print("Erro ao enviar boas vindas:", response_boas_vindas.text)
+                        
+                        elif texto.startswith("/assinar"):
+                            msg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+                            payload = {
+                                "chat_id": chat_id,
+                                "text": "🏆 <b>Plano VIP OddsSentry</b> 🏆\n\n⚡ <b>Plano VIP Mensal</b>\n• Todos os Sinais +EV pré-jogo e ao vivo\n• Acesso ao Grupo VIP de Sinais\n• Acesso imediato após pagamento\n• <b>R$ 9,90/mês</b>",
+                                "parse_mode": "HTML",
+                                "reply_markup": {
+                                    "inline_keyboard": [
+                                        [
+                                            {"text": "💎 Assinar VIP (R$ 9,90)", "callback_data": f"pay_vip_{chat_id}"},
+                                        ]
+                                    ]
+                                }
+                            }
+                            requests.post(msg_url, json=payload, timeout=10)
+
+                    elif "callback_query" in update:
+                        cb_query = update["callback_query"]
+                        cb_data = cb_query["data"]
+                        cb_chat_id = cb_query["message"]["chat"]["id"]
+                        cb_id = cb_query["id"]
+                        
+                        if cb_data.startswith("pay_"):
+                            parts = cb_data.split("_")
+                            plan_key = parts[1]
+                            tg_chat_id = parts[2]
+                            
+                            # Notificar Telegram que recebemos o callback
+                            requests.post(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/answerCallbackQuery", json={"callback_query_id": cb_id}, timeout=10)
+                            
+                            try:
+                                pay_url = "http://localhost:3000/api/payments/mercadopago/preference"
+                                pay_payload = {
+                                    "planKey": plan_key,
+                                    "email": f"tg_{tg_chat_id}@oddsentry.com",
+                                    "name": f"Telegram User {tg_chat_id}",
+                                    "userId": f"tg_{tg_chat_id}"
+                                }
+                                res = requests.post(pay_url, json=pay_payload, timeout=15)
+                                res_data = res.json()
+                                
+                                if "init_point" in res_data:
+                                    init_point = res_data["init_point"]
+                                    msg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+                                    requests.post(msg_url, json={
+                                        "chat_id": cb_chat_id,
+                                        "text": f"💳 <b>Fatura de Assinatura Gerada!</b>\n\nClique no link abaixo para realizar o pagamento no Mercado Pago (PIX ou Cartão):\n\n👉 <a href=\"{init_point}\">Clique aqui para Pagar</a>\n\n<i>Assim que o pagamento for confirmado, seu link de convite VIP será enviado automaticamente aqui!</i>",
+                                        "parse_mode": "HTML"
+                                    }, timeout=10)
+                                else:
+                                    msg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+                                    requests.post(msg_url, json={
+                                        "chat_id": cb_chat_id,
+                                        "text": f"❌ <b>Erro:</b> Não foi possível gerar o link de pagamento. Tente novamente mais tarde. ({res_data.get('error', 'Sem detalhes')})",
+                                        "parse_mode": "HTML"
+                                    }, timeout=10)
+                            except Exception as e:
+                                msg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+                                requests.post(msg_url, json={
+                                    "chat_id": cb_chat_id,
+                                    "text": f"❌ <b>Erro de Conexão:</b> Não foi possível conectar ao servidor de faturamento. ({str(e)})",
+                                    "parse_mode": "HTML"
+                                }, timeout=10)
             time.sleep(2)
         except Exception as e:
             print(f"Erro no Listener: {e}")

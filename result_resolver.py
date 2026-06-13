@@ -1,7 +1,7 @@
 import os
 import re
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -136,6 +136,11 @@ def resolver_oportunidade(row):
         return None, None
         
     status_api = match_found["fixture"]["status"]["short"]
+    # Se a partida foi descontinuada (cancelada, adiada, abandonada), marcamos como void
+    if status_api in ["CANC", "PST", "ABD", "AWD", "WO"]:
+        print(f"[-] Partida {confronto} descontinuada. Status: {status_api}. Marcando como VOID.")
+        return "void", status_api
+
     # Verificar se a partida já foi concluída
     if status_api not in ["FT", "AET", "PEN"]:
         print(f"[-] Partida {confronto} encontrada, mas ainda não concluída. Status atual: {status_api}")
@@ -183,9 +188,19 @@ def main():
     print(" INICIANDO RESOLVEDOR AUTOMÁTICO DE RESULTADOS ".center(60, "="))
     print("="*60)
     
-    # 1. Buscar oportunidades pendentes
+    # 1. Limpar registros muito antigos travados como pendentes (mais de 36 horas)
     try:
-        resp = supabase.table("ev_opportunities").select("*").eq("resultado", "pending").execute()
+        limite_data = (datetime.now(timezone.utc) - timedelta(hours=36)).isoformat()
+        resp_expired = supabase.table("ev_opportunities").update({"resultado": "expired"}).eq("resultado", "pending").lt("created_at", limite_data).execute()
+        expired_count = len(resp_expired.data or []) if resp_expired.data else 0
+        if expired_count > 0:
+            print(f"[-] Foram expirados {expired_count} registros pendentes com mais de 36 horas.")
+    except Exception as err:
+        print(f"[X] Erro ao expirar registros antigos: {err}")
+
+    # 2. Buscar as 1000 oportunidades mais recentes pendentes
+    try:
+        resp = supabase.table("ev_opportunities").select("*").eq("resultado", "pending").order("id", desc=True).limit(1000).execute()
         pending_opps = resp.data or []
     except Exception as e:
         print(f"[X] Erro ao buscar oportunidades pendentes: {e}")
