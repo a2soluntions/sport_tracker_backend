@@ -26,6 +26,19 @@ def ler_configuracoes_usuario():
     
     return 1000.0, None
 
+def ler_configuracoes_saas():
+    """Busca todas as configurações da tabela saas_settings"""
+    try:
+        resp = banco_de_dados.table('saas_settings').select('*').execute()
+        settings = {}
+        for row in resp.data:
+            settings[row['key']] = row['value']
+        return settings
+    except Exception as e:
+        print(f"\033[33m[!] Aviso: Não foi possível ler configurações SaaS da nuvem ({e}).\033[0m")
+        return {}
+
+
 def gravar_oportunidade_ev(dados_jogo: dict, mercado_nome: str, odd_mercado: float, odd_justa: float, ev_calculado: float, texto_stake: str):
     """Grava os dados na tabela ev_opportunities"""
     registro = {

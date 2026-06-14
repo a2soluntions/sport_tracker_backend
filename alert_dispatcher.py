@@ -34,8 +34,15 @@ def despachar_alertas_personalizados(confronto, campeonato, mercado, odd_ofereci
     ev_porcentagem = ev_decimal * 100 if ev_decimal < 1.0 else ev_decimal
     probabilidade_real_pct = 100.0 / odd_justa if odd_justa > 0 else 50.0
 
-    # Filtro padrão de EV Mínimo global para o grupo VIP (ex: 5%)
-    min_ev_grupo = 5.0
+    # Filtro dinâmico de EV Mínimo global para o grupo VIP (lido do Supabase)
+    try:
+        from database_connector import ler_configuracoes_saas
+        settings = ler_configuracoes_saas()
+        min_ev_grupo = float(settings.get('telegram_bot_min_ev', 5.0))
+    except Exception as e:
+        print(f"[Dispatcher] Erro ao ler min_ev do Supabase: {e}. Usando fallback de 5.0%")
+        min_ev_grupo = 5.0
+
     if ev_porcentagem < min_ev_grupo:
         print(f"[Dispatcher] Ignorando jogo com EV de +{ev_porcentagem:.2f}% (menor que o minimo de {min_ev_grupo}%)")
         return

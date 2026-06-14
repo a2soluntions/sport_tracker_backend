@@ -1,12 +1,64 @@
 import time
 import random
+import os
+import json
+import requests
+from datetime import datetime, timedelta, timezone
 from api_football_source import coletar_odds_pre_jogo_api, coletar_odds_ao_vivo_api, buscar_ligas_alvo
 from poisson_model import calcular_probabilidades_poisson
 from ev_calculator import calcular_ev
-from database_connector import gravar_oportunidade_ev, ler_configuracoes_usuario
+from database_connector import gravar_oportunidade_ev, ler_configuracoes_usuario, ler_configuracoes_saas
 from kelly_criterion import calcular_criterio_kelly
 from alert_dispatcher import despachar_alertas_personalizados
 import result_resolver
+
+def should_run_schedule(tipo, hora_agendada, data_hoje):
+    filepath = "last_runs.json"
+    runs = {}
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, 'r') as f:
+                runs = json.load(f)
+        except:
+            pass
+            
+    if tipo not in runs:
+        runs[tipo] = {}
+    if data_hoje not in runs[tipo]:
+        runs[tipo][data_hoje] = []
+        
+    return hora_agendada not in runs[tipo][data_hoje]
+
+def mark_schedule_run(tipo, hora_agendada, data_hoje):
+    filepath = "last_runs.json"
+    runs = {}
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, 'r') as f:
+                runs = json.load(f)
+        except:
+            pass
+            
+    if tipo not in runs:
+        runs[tipo] = {}
+    if data_hoje not in runs[tipo]:
+        runs[tipo][data_hoje] = []
+        
+    if hora_agendada not in runs[tipo][data_hoje]:
+        runs[tipo][data_hoje].append(hora_agendada)
+        
+    with open(filepath, 'w') as f:
+        json.dump(runs, f, indent=2)
+
+def is_time_active(scheduled_str, now_dt):
+    try:
+        sch_h, sch_m = map(int, scheduled_str.split(':'))
+        sch_dt = now_dt.replace(hour=sch_h, minute=sch_m, second=0, microsecond=0)
+        diff = (now_dt - sch_dt).total_seconds()
+        return 0 <= diff <= 600  # 10 minutes window
+    except:
+        return False
+
 
 def main():
     # 0. Executa o resolvedor de resultados automático para atualizar pendências do passado
@@ -23,6 +75,48 @@ def main():
     banca_usuario, _ = ler_configuracoes_usuario()
     ligas_alvo = buscar_ligas_alvo()
     print(f"[-] Configuração Ativa: Banca de R$ {banca_usuario:.2f} | Alvos: {len(ligas_alvo)} Ligas")
+
+    settings = ler_configuracoes_saas()
+    
+    # 1.1. Obter fuso de Brasília
+    tz_br = timezone(timedelta(hours=-3))
+    now_br = datetime.now(tz_br)
+    today_date_str = now_br.strftime("%Y-%m-%d")
+    
+    # 1.2. Verificar agendamento de Alertas EV (+EV)
+    telegram_bot_enabled = settings.get('telegram_bot_enabled') == True
+    telegram_bot_hours = settings.get('telegram_bot_hours', [])
+    
+    should_dispatch_ev = False
+    matched_ev_hour = None
+    
+    if telegram_bot_enabled:
+        for hour in telegram_bot_hours:
+            if is_time_active(hour, now_br) and should_run_schedule('alerta_ev', hour, today_date_str):
+                should_dispatch_ev = True
+                matched_ev_hour = hour
+                break
+                
+    print(f"[-] Robô de Sinais VIP: {'ATIVO' if telegram_bot_enabled else 'INATIVO'} | Horário correspondente: {'SIM (' + matched_ev_hour + ')' if should_dispatch_ev else 'NÃO'}")
+
+    # 1.3. Dispara piloto automático de palpites no Next.js (que gerencia agendamento e envio próprio)
+    try:
+        app_url = os.getenv("NEXT_PUBLIC_APP_URL", "http://localhost:3000").rstrip("/")
+        url_auto = f"{app_url}/api/telegram/auto-dispatch"
+        headers = {"Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY')}"}
+        resp = requests.post(url_auto, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            res_json = resp.json()
+            palpites_status = res_json.get("palpites", {})
+            if palpites_status.get("dispatched"):
+                print(f"[Auto-Broadcast] Palpites do dia disparados com sucesso via API Next.js!")
+            elif palpites_status.get("enabled"):
+                print(f"[Auto-Broadcast] Piloto de palpites verificado. Nenhum disparo de hora ativa pendente.")
+        else:
+            print(f"[Auto-Broadcast] Chamada da API auto-dispatch retornou status {resp.status_code}")
+    except Exception as e:
+        print(f"[Auto-Broadcast] Não foi possível chamar a API auto-dispatch ({e})")
+
 
     if not ligas_alvo:
         print("\n\033[31m[X] Nenhuma liga selecionada no painel. Abortando ciclo.\033[0m")
@@ -86,16 +180,17 @@ def main():
                 texto_stake=texto_stake_final
             )
             
-            # Dispara Notificação Celular Personalizada
-            despachar_alertas_personalizados(
-                confronto=jogo['confronto'],
-                campeonato=jogo['campeonato'],
-                mercado=f"Vitória do {time_casa}",
-                odd_oferecida=jogo['odd_casa'],
-                odd_justa=round(odd_justa_casa, 2),
-                ev_decimal=resultado_ev_vencedor['ev'],
-                is_live=jogo.get('is_live', False)
-            )
+            # Dispara Notificação Celular Personalizada se estiver no horário agendado
+            if should_dispatch_ev:
+                despachar_alertas_personalizados(
+                    confronto=jogo['confronto'],
+                    campeonato=jogo['campeonato'],
+                    mercado=f"Vitória do {time_casa}",
+                    odd_oferecida=jogo['odd_casa'],
+                    odd_justa=round(odd_justa_casa, 2),
+                    ev_decimal=resultado_ev_vencedor['ev'],
+                    is_live=jogo.get('is_live', False)
+                )
         
         # --- AVALIAÇÃO MERCADO 2: TOTAL DE GOLS (OVER 2.5) ---
         # Garante que não quebre caso o scraper anterior (fallback manual) não tenha gerado odd_over_25
@@ -121,16 +216,17 @@ def main():
                 texto_stake=texto_stake_gols
             )
             
-            # Dispara Notificação Celular Personalizada
-            despachar_alertas_personalizados(
-                confronto=jogo['confronto'],
-                campeonato=jogo['campeonato'],
-                mercado="Mais de 2.5 Gols",
-                odd_oferecida=odd_over_mercado,
-                odd_justa=round(odd_justa_over, 2),
-                ev_decimal=resultado_ev_gols['ev'],
-                is_live=jogo.get('is_live', False)
-            )
+            # Dispara Notificação Celular Personalizada se estiver no horário agendado
+            if should_dispatch_ev:
+                despachar_alertas_personalizados(
+                    confronto=jogo['confronto'],
+                    campeonato=jogo['campeonato'],
+                    mercado="Mais de 2.5 Gols",
+                    odd_oferecida=odd_over_mercado,
+                    odd_justa=round(odd_justa_over, 2),
+                    ev_decimal=resultado_ev_gols['ev'],
+                    is_live=jogo.get('is_live', False)
+                )
 
         # --- AVALIAÇÃO MERCADO 3: DRAW NO BET (EMPATE ANULA) CASA ---
         odd_dnb_casa = jogo.get('odd_dnb_casa')
@@ -225,6 +321,10 @@ def main():
                 )
             
         time.sleep(1)
+
+    # Se disparamos os alertas EV, registrar que rodamos esta hora
+    if should_dispatch_ev and matched_ev_hour:
+        mark_schedule_run('alerta_ev', matched_ev_hour, today_date_str)
 
     print("\n" + "="*60)
     print(" CICLO DE PATRULHA FINALIZADO ".center(60, "="))
