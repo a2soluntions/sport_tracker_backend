@@ -137,9 +137,30 @@ def main():
     # 3. Processa os jogos coletados
     for jogo in jogos_raspados:
         print(f"\n\033[1mAnalisando: {jogo['confronto']} ({jogo['campeonato']})\033[0m")
+        # Determinar xG dinâmico usando as odds de mercado como base de probabilidade implícita
+        # Cotação menor significa maior favoritismo, logo maior xG projetado.
+        odd_c = float(jogo.get('odd_casa', 2.0))
+        odd_f = float(jogo.get('odd_fora', 2.0))
         
-        xg_casa_simulado = random.uniform(1.2, 2.8) 
-        xg_fora_simulado = random.uniform(0.5, 1.9)
+        # Probabilidades implícitas brutas
+        prob_impl_c = 1.0 / odd_c if odd_c > 0 else 0.5
+        prob_impl_f = 1.0 / odd_f if odd_f > 0 else 0.5
+        total_impl = prob_impl_c + prob_impl_f
+        
+        # Normalizar para obter proporções
+        prop_c = prob_impl_c / total_impl if total_impl > 0 else 0.5
+        prop_f = prob_impl_f / total_impl if total_impl > 0 else 0.5
+        
+        # Definir a média de gols total esperada na partida (ex: 2.5 gols em média)
+        total_gols_projetado = 2.6
+        
+        # Injetar o xG proporcional
+        xg_casa_simulado = round(total_gols_projetado * prop_c, 2)
+        xg_fora_simulado = round(total_gols_projetado * prop_f, 2)
+        
+        # Garante limites saudáveis de segurança (mínimo de 0.3 e máximo de 3.5)
+        xg_casa_simulado = max(0.3, min(3.5, xg_casa_simulado))
+        xg_fora_simulado = max(0.3, min(3.5, xg_fora_simulado))
         
         if jogo.get('is_live'):
             minuto = jogo['minuto']
