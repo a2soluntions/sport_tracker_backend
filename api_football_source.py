@@ -70,6 +70,16 @@ def coletar_odds_pre_jogo_api(ligas_alvo_ids):
                     
                     # Filtra apenas partidas das nossas ligas alvo e que não começaram/terminaram
                     if lid in ligas_alvo_ids and status in ["NS", "TBD"]:
+                        # Adiciona verificação extra para garantir que a partida não começou no horário
+                        try:
+                            fixture_date_str = f["fixture"]["date"]
+                            fixture_time = datetime.fromisoformat(fixture_date_str.replace("Z", "+00:00"))
+                            now_utc = datetime.now(timezone.utc)
+                            if fixture_time <= now_utc:
+                                # Já começou ou passou do horário de início
+                                continue
+                        except Exception as e:
+                            pass
                         fixtures_filtradas.append(f)
                         matched += 1
                 print(f" -> Encontradas {matched} partidas correspondentes às ligas ativas.")

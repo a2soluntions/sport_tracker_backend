@@ -1,0 +1,568 @@
+diff --git a/src/app/palpites/page.js b/src/app/palpites/page.js
+index a353e11..7a034ec 100644
+--- a/src/app/palpites/page.js
++++ b/src/app/palpites/page.js
+@@ -2454,15 +2454,11 @@ export default function PalpitesPage() {
+                   border: game.isLive ? '1px solid #4CAF50' : game.isFinished ? '1px solid #ff4d4d' : hasGameEV ? '1px solid var(--brand-neon)' : '1px solid #333', 
+                   borderLeft: game.isLive ? '6px solid #4CAF50' : game.isFinished ? '6px solid #ff4d4d' : hasGameEV ? '6px solid var(--brand-neon)' : '6px solid #4CAF50',
+                   boxShadow: hasGameEV ? '0 0 15px rgba(204, 255, 0, 0.08)' : 'none',
+-                  overflow: 'visible',
+-                  opacity: game.isFinished ? 0.7 : 1,
+-                  flexShrink: 0,
+-                  height: 'auto'
++                  overflow: 'hidden'
+                 }}>
+-                  {/* Grid de 4 Colunas do Card */}
+                   <div className="game-card-grid">
+-                    {/* Coluna 1: Placar, Radar e Informacoes ao Vivo */}
+-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
++                    {/* Coluna 1: Placar, Radar/Logo e Info */}
++                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', width: '100%' }}>
+                       {/* Cabecalho da Coluna 1 */}
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                         <span className="mobile-hide" style={{ color: game.isLive ? '#ff4444' : '#4CAF50', fontWeight: 'bold', fontSize: '0.85rem' }}>{game.date}</span>
+@@ -2471,10 +2467,8 @@ export default function PalpitesPage() {
+                         {hasGameEV && <span className="badge-neon" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>🔥 +EV</span>}
+                       </div>
+                       
+-                      <div style={{ fontSize: '0.78rem', color: '#888', textTransform: 'uppercase' }}>Futebol</div>
+-                      
+                       {/* Campeonato */}
+-                      <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem' }}>
++                      <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', marginTop: '2px' }}>
+                         {(() => {
+                           const logoUrl = getLeagueLogoUrl(game.sourceLeagueId || selectedLeague);
+                           if (logoUrl) {
+@@ -2483,23 +2477,43 @@ export default function PalpitesPage() {
+                               <img 
+                                 src={logoUrl} 
+                                 alt="Campeonato Logo" 
+-                                style={isLocal ? { width: '18px', height: '18px', objectFit: 'contain' } : { width: '18px', height: '12px', objectFit: 'cover', borderRadius: '2px', border: '1px solid rgba(255, 255, 255, 0.1)' }}
++                                style={isLocal ? { width: '16px', height: '16px', objectFit: 'contain' } : { width: '16px', height: '10px', objectFit: 'cover', borderRadius: '2px', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                               />
+                             );
+                           }
+                           return null;
+                         })()}
+-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
++                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '90px' }}>
+                           {getLeagueNameDynamic(game.sourceLeagueId || selectedLeague)}
+                         </span>
+-                        <span style={{ background: '#333', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', color: '#aaa' }}>R.{game.round}</span>
++                        <span style={{ background: '#222', padding: '1px 4px', borderRadius: '3px', fontSize: '0.62rem', color: '#888' }}>R.{game.round}</span>
+                       </div>
+ 
+-                      {/* Radar Campo Solo (Campo fica sozinha) */}
+-                      {/* Radar Campo Solo (Campo fica sozinha) */}
++                      {/* Radar Campo Solo ou A2 Logo se Pré-jogo */}
+                       {(() => {
+                         const radar = game.isLive ? getLiveMatchRadar(game) : null;
+-                        if (!radar) return null;
++                        if (!radar) {
++                          return (
++                            <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '4px 0' }}>
++                              <div style={{ 
++                                display: 'flex', 
++                                flexDirection: 'column', 
++                                alignItems: 'center', 
++                                justifyContent: 'center',
++                                width: '90px', 
++                                height: '53px', 
++                                background: 'rgba(255, 255, 255, 0.01)',
++                                border: '1px dashed rgba(255, 255, 255, 0.08)', 
++                                borderRadius: '4px',
++                                flexShrink: 0,
++                                boxSizing: 'border-box'
++                              }}>
++                                <span style={{ fontSize: '0.62rem', fontWeight: 'bold', color: 'var(--brand-neon)', letterSpacing: '0.5px' }}>A2</span>
++                                <span style={{ fontSize: '0.45rem', color: '#555', textTransform: 'uppercase', fontWeight: 'bold', marginTop: '-2px' }}>Tracker</span>
++                              </div>
++                            </div>
++                          );
++                        }
+                         
+                         let glowLeft = '50%';
+                         let glowColor = 'rgba(204, 255, 0, 0.4)';
+@@ -2512,7 +2526,7 @@ export default function PalpitesPage() {
+                         }
+                         
+                         return (
+-                          <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '4px' }}>
++                          <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '4px 0' }}>
+                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+                               <div 
+                                 onClick={() => setOpenRadarGameId(game.id)}
+@@ -2556,35 +2570,23 @@ export default function PalpitesPage() {
+                         );
+                       })()}
+ 
+-                      {/* Placar horizontal com nomes do lado do placar e mais perto da margem */}
++                      {/* Placar horizontal com nomes dos lados */}
+                       {(() => {
+                         const radar = game.isLive ? getLiveMatchRadar(game) : null;
+                         return (
+-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', width: '100%', justifyContent: 'flex-start' }}>
++                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', justifyContent: 'center' }}>
+                             {/* Home Team */}
+-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end', minWidth: 0 }}>
++                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end', minWidth: 0, flex: 1 }}>
+                               {radar && radar.zone === 'away_box' && (
+-                                <span 
+-                                  style={{ 
+-                                    color: '#ff4400', 
+-                                    animation: 'blinkFlame 1s infinite ease-in-out', 
+-                                    marginRight: '2px', 
+-                                    fontSize: '0.85rem',
+-                                    fontWeight: 'bold',
+-                                    display: 'inline-block'
+-                                  }}
+-                                  title="Pressionando no ataque - Perto do Gol! 🔥"
+-                                >
+-                                  🔥
+-                                </span>
++                                <span style={{ color: '#ff4400', animation: 'blinkFlame 1s infinite ease-in-out', fontSize: '0.8rem', fontWeight: 'bold' }}>🔥</span>
+                               )}
+-                              <span className="team-name" title={game.home} style={{ fontSize: '0.8rem', maxWidth: '75px', textAlign: 'right' }}>
++                              <span className="team-name" title={game.home} style={{ fontSize: '0.72rem', maxWidth: '60px', textAlign: 'right' }}>
+                                 {game.home}
+                               </span>
+                               <img 
+                                 src={game.homeLogo || `https://ui-avatars.com/api/?name=${game.home}&background=222&color=fff&rounded=true&bold=true&size=32`} 
+                                 alt={game.home} 
+-                                style={{ width: '20px', height: '20px', objectFit: 'contain', flexShrink: 0 }}
++                                style={{ width: '16px', height: '16px', objectFit: 'contain', flexShrink: 0 }}
+                                 onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${game.home}&background=222&color=fff&rounded=true&bold=true&size=32`; }} 
+                               />
+                             </div>
+@@ -2593,12 +2595,12 @@ export default function PalpitesPage() {
+                             <div style={{ 
+                               display: 'flex', 
+                               alignItems: 'center', 
+-                              gap: '4px', 
++                              gap: '3px', 
+                               color: (game.isLive || game.isFinished) ? '#4CAF50' : '#555', 
+-                              fontSize: '0.95rem', 
++                              fontSize: '0.85rem', 
+                               fontWeight: 'bold',
+                               background: (game.isLive || game.isFinished) ? '#1a1a1a' : 'transparent',
+-                              padding: (game.isLive || game.isFinished) ? '2px 6px' : '0',
++                              padding: (game.isLive || game.isFinished) ? '1px 5px' : '0',
+                               borderRadius: '4px',
+                               border: (game.isLive || game.isFinished) ? '1px solid #222' : 'none',
+                               flexShrink: 0
+@@ -2606,7 +2608,7 @@ export default function PalpitesPage() {
+                               {(game.isLive || game.isFinished) ? (
+                                 <>
+                                   <span style={{ color: '#fff' }}>{game.goalsHome}</span>
+-                                  <span style={{ fontSize: '0.75rem', color: '#555' }}>x</span>
++                                  <span style={{ fontSize: '0.7rem', color: '#555' }}>x</span>
+                                   <span style={{ color: '#fff' }}>{game.goalsAway}</span>
+                                 </>
+                               ) : (
+@@ -2615,110 +2617,27 @@ export default function PalpitesPage() {
+                             </div>
+ 
+                             {/* Away Team */}
+-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start', minWidth: 0 }}>
++                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-start', minWidth: 0, flex: 1 }}>
+                               <img 
+                                 src={game.awayLogo || `https://ui-avatars.com/api/?name=${game.away}&background=222&color=fff&rounded=true&bold=true&size=32`} 
+                                 alt={game.away} 
+-                                style={{ width: '20px', height: '20px', objectFit: 'contain', flexShrink: 0 }}
++                                style={{ width: '16px', height: '16px', objectFit: 'contain', flexShrink: 0 }}
+                                 onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${game.away}&background=222&color=fff&rounded=true&bold=true&size=32`; }} 
+                               />
+-                              <span className="team-name" title={game.away} style={{ fontSize: '0.8rem', maxWidth: '75px', textAlign: 'left' }}>
++                              <span className="team-name" title={game.away} style={{ fontSize: '0.72rem', maxWidth: '60px', textAlign: 'left' }}>
+                                 {game.away}
+                               </span>
+                               {radar && radar.zone === 'home_box' && (
+-                                <span 
+-                                  style={{ 
+-                                    color: '#ff4400', 
+-                                    animation: 'blinkFlame 1s infinite ease-in-out', 
+-                                    marginLeft: '2px', 
+-                                    fontSize: '0.85rem',
+-                                    fontWeight: 'bold',
+-                                    display: 'inline-block'
+-                                  }}
+-                                  title="Pressionando no ataque - Perto do Gol! 🔥"
+-                                >
+-                                  🔥
+-                                </span>
++                                <span style={{ color: '#ff4400', animation: 'blinkFlame 1s infinite ease-in-out', fontSize: '0.8rem', fontWeight: 'bold' }}>🔥</span>
+                               )}
+                             </div>
+                           </div>
+                         );
+                       })()}
+-                      
+-                      {/* Comparativo de Odds Simplificado abaixo do placar */}
+-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', width: '100%', marginTop: '6px' }}>
+-                        {bmOdds.map(bm => {
+-                          const fairOdd = Number(fairOddVal);
+-                          const isEV = bm.odd > fairOdd;
+-                          return (
+-                            <div 
+-                              key={bm.name} 
+-                              onClick={() => {
+-                                if (isFollowed(game)) return;
+-                                setActiveFollowId(game.id);
+-                                setFollowOdd(bm.odd.toFixed(2));
+-                                setFollowAmount('50');
+-                                showToast(`Selecionou ${bm.name} (@${bm.odd.toFixed(2)}) para registrar na Banca!`, 'success');
+-                              }}
+-                              style={{
+-                                display: 'flex',
+-                                alignItems: 'center',
+-                                justifyContent: 'space-between',
+-                                background: bm.isBest ? 'rgba(204, 255, 0, 0.08)' : 'rgba(255,255,255,0.02)',
+-                                border: bm.isBest ? '1px solid var(--brand-neon)' : '1px solid #222',
+-                                padding: '3px 6px',
+-                                borderRadius: '4px',
+-                                fontSize: '0.7rem',
+-                                cursor: isFollowed(game) ? 'not-allowed' : 'pointer',
+-                                transition: 'all 0.2s',
+-                              }}
+-                            >
+-                              {getBookmakerLogo(bm.name)}
+-                              <span style={{ fontWeight: 'bold', color: bm.isBest ? 'var(--brand-neon)' : '#ccc' }}>
+-                                @{bm.odd.toFixed(2)}
+-                              </span>
+-                            </div>
+-                          );
+-                        })}
+-                      </div>
+-
+-                      {/* Minhas Apostas abaixo do placar */}
+-                      {gameBets.length > 0 && (
+-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px', width: '100%', borderTop: '1px dashed #222', paddingTop: '6px' }}>
+-                          <div style={{ fontSize: '0.62rem', color: 'var(--brand-neon)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.3px' }}>🎯 Minhas Apostas</div>
+-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+-                            {gameBets.slice(0, 2).map(bet => {
+-                              const isWin = bet.type === 'ganho';
+-                              const isLoss = bet.type === 'perda';
+-                              const isRefund = bet.odd === 1.0 && bet.description && bet.description.includes('[DEVOLVIDA]');
+-                              let statusColor = '#ff9800';
+-                              if (isRefund) statusColor = '#2196f3';
+-                              else if (isWin) statusColor = '#4CAF50';
+-                              else if (isLoss) statusColor = '#f44336';
+-                              
+-                              let selectionText = bet.description;
+-                              const matchSel = bet.description.match(/\((.*?)\)/);
+-                              if (matchSel && matchSel[1]) selectionText = matchSel[1];
+-
+-                              return (
+-                                <div key={bet.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.65rem', background: 'rgba(0,0,0,0.2)', padding: '2px 4px', borderRadius: '4px', border: '1px solid #222' }}>
+-                                  <span style={{ fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70px' }} title={selectionText}>
+-                                    {selectionText}
+-                                  </span>
+-                                  <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>R${bet.amount}</span>
+-                                  <span style={{ color: statusColor, fontWeight: 'bold', fontSize: '0.55rem' }}>
+-                                    {isRefund ? 'DEV' : isWin ? 'WIN' : isLoss ? 'RED' : 'PEND'}
+-                                  </span>
+-                                </div>
+-                              );
+-                            })}
+-                          </div>
+-                        </div>
+-                      )}
+                     </div>
+ 
+                     {/* Coluna 2: Projeções - Gols */}
+-                    <div className="projections-column">
++                    <div className="projections-column" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+                       {/* Mercado de Gols */}
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                         <div style={{ fontSize: '0.68rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.3px' }}>⚽ Mercado de Gols</div>
+@@ -2805,118 +2724,159 @@ export default function PalpitesPage() {
+                     </div>
+ 
+                     {/* Coluna 3: Projeções - Cantos e Cartões */}
+-                    <div className="projections-column" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+-                      {/* Projecao de Cantos */}
+-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+-                        <div style={{ fontSize: '0.68rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.3px' }}>📐 Projecao de Cantos</div>
+-                        <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+-                          <span style={{ color: '#aaa' }}>Projetado:</span>
+-                          <span style={{ fontWeight: 'bold', color: 'var(--brand-neon)' }}>{cornStatsObj.projected}</span>
+-                        </div>
+-                        <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+-                          <span style={{ color: '#aaa' }}>Casa (F/S):</span>
+-                          <span style={{ fontWeight: 'bold' }}>{cornStatsObj.home.feitos}/{cornStatsObj.home.sofridos}</span>
+-                        </div>
+-                        <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+-                          <span style={{ color: '#aaa' }}>Fora (F/S):</span>
+-                          <span style={{ fontWeight: 'bold' }}>{cornStatsObj.away.feitos}/{cornStatsObj.away.sofridos}</span>
++                    <div className="projections-column" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
++                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
++                        {/* Projecao de Cantos */}
++                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
++                          <div style={{ fontSize: '0.68rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.3px' }}>📐 Projecao de Cantos</div>
++                          <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
++                            <span style={{ color: '#aaa' }}>Projetado:</span>
++                            <span style={{ fontWeight: 'bold', color: 'var(--brand-neon)' }}>{cornStatsObj.projected}</span>
++                          </div>
++                          <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
++                            <span style={{ color: '#aaa' }}>Casa (F/S):</span>
++                            <span style={{ fontWeight: 'bold' }}>{cornStatsObj.home.feitos}/{cornStatsObj.home.sofridos}</span>
++                          </div>
++                          <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
++                            <span style={{ color: '#aaa' }}>Fora (F/S):</span>
++                            <span style={{ fontWeight: 'bold' }}>{cornStatsObj.away.feitos}/{cornStatsObj.away.sofridos}</span>
++                          </div>
+                         </div>
+-                      </div>
+ 
+-                      {/* Projecao de Cartoes */}
+-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+-                        <div style={{ fontSize: '0.68rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.3px' }}>🟨 Projecao de Cartoes</div>
+-                        <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+-                          <span style={{ color: '#aaa' }}>Total Amarelos:</span>
+-                          <span style={{ fontWeight: 'bold', color: 'var(--brand-neon)' }}>{cardsStatsObj.totalYellow}</span>
+-                        </div>
+-                        <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+-                          <span style={{ color: '#aaa' }}>Casa (A/V):</span>
+-                          <span style={{ fontWeight: 'bold' }}>{cardsStatsObj.home.yellow}/{cardsStatsObj.home.red.toFixed(1)}</span>
+-                        </div>
+-                        <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+-                          <span style={{ color: '#aaa' }}>Fora (A/V):</span>
+-                          <span style={{ fontWeight: 'bold' }}>{cardsStatsObj.away.yellow}/{cardsStatsObj.away.red.toFixed(1)}</span>
++                        {/* Projecao de Cartoes */}
++                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
++                          <div style={{ fontSize: '0.68rem', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.3px' }}>🟨 Projecao de Cartoes</div>
++                          <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
++                            <span style={{ color: '#aaa' }}>Total Amarelos:</span>
++                            <span style={{ fontWeight: 'bold', color: 'var(--brand-neon)' }}>{cardsStatsObj.totalYellow}</span>
++                          </div>
++                          <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
++                            <span style={{ color: '#aaa' }}>Casa (A/V):</span>
++                            <span style={{ fontWeight: 'bold' }}>{cardsStatsObj.home.yellow}/{cardsStatsObj.home.red.toFixed(1)}</span>
++                          </div>
++                          <div style={{ fontSize: '0.78rem', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
++                            <span style={{ color: '#aaa' }}>Fora (A/V):</span>
++                            <span style={{ fontWeight: 'bold' }}>{cardsStatsObj.away.yellow}/{cardsStatsObj.away.red.toFixed(1)}</span>
++                          </div>
+                         </div>
+                       </div>
+-                    </div>
+ 
+-                    {/* Coluna 4: Palpite Sugerido, Protecao, Botoes e Minhas Apostas */}
+-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'flex-start' }}>
+-                      {/* Card de Palpite Sugerido mais compacto */}
+-                      <div style={{ 
+-                        display: 'flex', 
+-                        alignItems: 'center', 
+-                        justifyContent: 'space-between',
+-                        background: 'rgba(255,255,255,0.02)', 
+-                        border: '1px solid #222', 
+-                        borderRadius: '6px', 
+-                        padding: '4px 6px', 
+-                        gap: '4px' 
+-                      }}>
+-                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
+-                          <span style={{ fontSize: '0.55rem', color: '#888', fontWeight: 'bold' }}>SUGERIDO</span>
+-                          <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={game.stats.bestTip.selection}>
+-                            {game.stats.bestTip.selection}
+-                          </span>
+-                        </div>
+-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+-                          <span style={{ fontSize: '0.62rem', color: '#aaa' }}>{(game.stats.bestTip.prob * 100).toFixed(0)}%</span>
+-                          <span style={{ background: '#4CAF50', color: '#fff', padding: '2px 4px', borderRadius: '3px', fontWeight: 'bold', fontSize: '0.72rem' }}>
+-                            @{formatOdd(game.stats.bestTip.prob)}
+-                          </span>
++                      {/* Minhas Apostas no rodapé da Coluna 3 */}
++                      {gameBets.length > 0 ? (
++                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px dashed #222', paddingTop: '6px', width: '100%' }}>
++                          <div style={{ fontSize: '0.62rem', color: 'var(--brand-neon)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.3px' }}>🎯 Minhas Apostas</div>
++                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
++                            {gameBets.slice(0, 1).map(bet => {
++                              const isWin = bet.type === 'ganho';
++                              const isLoss = bet.type === 'perda';
++                              const isRefund = bet.odd === 1.0 && bet.description && bet.description.includes('[DEVOLVIDA]');
++                              let statusColor = '#ff9800';
++                              if (isRefund) statusColor = '#2196f3';
++                              else if (isWin) statusColor = '#4CAF50';
++                              else if (isLoss) statusColor = '#f44336';
++                              
++                              let selectionText = bet.description;
++                              const matchSel = bet.description.match(/\((.*?)\)/);
++                              if (matchSel && matchSel[1]) selectionText = matchSel[1];
++
++                              return (
++                                <div key={bet.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.65rem', background: 'rgba(0,0,0,0.2)', padding: '2px 4px', borderRadius: '4px', border: '1px solid #222' }}>
++                                  <span style={{ fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70px' }} title={selectionText}>
++                                    {selectionText}
++                                  </span>
++                                  <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>R${bet.amount}</span>
++                                  <span style={{ color: statusColor, fontWeight: 'bold', fontSize: '0.55rem' }}>
++                                    {isRefund ? 'DEV' : isWin ? 'WIN' : isLoss ? 'RED' : 'PEND'}
++                                  </span>
++                                </div>
++                              );
++                            })}
++                          </div>
+                         </div>
+-                      </div>
++                      ) : (
++                        <div style={{ height: '1px' }}></div>
++                      )}
++                    </div>
+ 
+-                      {/* Protecao Handicap se houver */}
+-                      {game.stats.bestHandicapTip && (
++                    {/* Coluna 4: Palpite Sugerido, Protecao, Botoes */}
++                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', width: '100%' }}>
++                      {/* Palpites e Proteções agrupados no topo */}
++                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
++                        {/* Card de Palpite Sugerido mais compacto */}
+                         <div style={{ 
+-                          background: 'rgba(204, 255, 0, 0.02)', 
+-                          border: '1px dashed rgba(204, 255, 0, 0.15)', 
+-                          borderRadius: '6px', 
+-                          padding: '4px 6px', 
+-                          fontSize: '0.68rem',
+-                          color: 'var(--brand-neon)',
+-                          display: 'flex',
+-                          alignItems: 'center',
++                          display: 'flex', 
++                          alignItems: 'center', 
+                           justifyContent: 'space-between',
+-                          gap: '4px'
++                          background: 'rgba(255,255,255,0.02)', 
++                          border: '1px solid #222', 
++                          borderRadius: '6px', 
++                          padding: '3px 5px', 
++                          gap: '3px' 
+                         }}>
+                           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
+-                            <span style={{ fontSize: '0.55rem', color: '#888', fontWeight: 'bold' }}>PROTEÇÃO</span>
+-                            <span className="protection-text" title={game.stats.bestHandicapTip.selection} style={{ fontSize: '0.72rem', fontWeight: 'bold', color: 'var(--brand-neon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+-                              {game.stats.bestHandicapTip.selection}
++                            <span style={{ fontSize: '0.5rem', color: '#888', fontWeight: 'bold', lineHeight: '1' }}>SUGERIDO</span>
++                            <span style={{ fontSize: '0.72rem', fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }} title={game.stats.bestTip.selection}>
++                              {game.stats.bestTip.selection}
++                            </span>
++                          </div>
++                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
++                            <span style={{ fontSize: '0.58rem', color: '#888' }}>{(game.stats.bestTip.prob * 100).toFixed(0)}%</span>
++                            <span style={{ background: '#4CAF50', color: '#fff', padding: '1px 3px', borderRadius: '3px', fontWeight: 'bold', fontSize: '0.68rem' }}>
++                              @{formatOdd(game.stats.bestTip.prob)}
+                             </span>
+                           </div>
+-                          <button
+-                            onClick={async () => {
+-                              const selection = game.stats.bestHandicapTip.selection;
+-                              const fairOdd = (1 / game.stats.bestHandicapTip.prob).toFixed(2);
+-                              const fakeGame = { ...game, stats: { ...game.stats, bestTip: game.stats.bestHandicapTip } };
+-                              if (isFollowed(fakeGame)) return;
+-                              
+-                              setActiveFollowId(game.id);
+-                              setFollowOdd(fairOdd);
+-                              setFollowAmount('50');
+-                              showToast(`Selecionou ${selection} para registrar!`, 'success');
+-                            }}
+-                            disabled={isFollowed({ ...game, stats: { ...game.stats, bestTip: game.stats.bestHandicapTip } })}
+-                            style={{
+-                              background: 'var(--brand-neon)',
+-                              color: '#000',
+-                              border: 'none',
+-                              padding: '2px 6px',
+-                              borderRadius: '3px',
+-                              fontSize: '0.62rem',
+-                              fontWeight: 'bold',
+-                              cursor: 'pointer',
+-                              flexShrink: 0
+-                            }}
+-                          >
+-                            Seguir
+-                          </button>
+                         </div>
+-                      )}
++
++                        {/* Protecao Handicap se houver */}
++                        {game.stats.bestHandicapTip && (
++                          <div style={{ 
++                            background: 'rgba(204, 255, 0, 0.02)', 
++                            border: '1px dashed rgba(204, 255, 0, 0.15)', 
++                            borderRadius: '6px', 
++                            padding: '3px 5px', 
++                            fontSize: '0.65rem',
++                            color: 'var(--brand-neon)',
++                            display: 'flex',
++                            alignItems: 'center',
++                            justifyContent: 'space-between',
++                            gap: '3px'
++                          }}>
++                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
++                              <span style={{ fontSize: '0.5rem', color: '#888', fontWeight: 'bold', lineHeight: '1' }}>PROTEÇÃO</span>
++                              <span className="protection-text" title={game.stats.bestHandicapTip.selection} style={{ fontSize: '0.68rem', fontWeight: 'bold', color: 'var(--brand-neon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }}>
++                                {game.stats.bestHandicapTip.selection}
++                              </span>
++                            </div>
++                            <button
++                              onClick={async () => {
++                                const selection = game.stats.bestHandicapTip.selection;
++                                const fairOdd = (1 / game.stats.bestHandicapTip.prob).toFixed(2);
++                                const fakeGame = { ...game, stats: { ...game.stats, bestTip: game.stats.bestHandicapTip } };
++                                if (isFollowed(fakeGame)) return;
++                                
++                                setActiveFollowId(game.id);
++                                setFollowOdd(fairOdd);
++                                setFollowAmount('50');
++                                showToast(`Selecionou ${selection} para registrar!`, 'success');
++                              }}
++                              disabled={isFollowed({ ...game, stats: { ...game.stats, bestTip: game.stats.bestHandicapTip } })}
++                              style={{
++                                background: 'var(--brand-neon)',
++                                color: '#000',
++                                border: 'none',
++                                padding: '1px 4px',
++                                borderRadius: '3px',
++                                fontSize: '0.58rem',
++                                fontWeight: 'bold',
++                                cursor: 'pointer',
++                                flexShrink: 0
++                              }}
++                            >
++                              Seguir
++                            </button>
++                          </div>
++                        )}
++                      </div>
+ 
+                       {/* Botoes de Acao */}
+                       <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginTop: '2px' }}>
+@@ -5266,17 +5226,16 @@ export default function PalpitesPage() {
+           gap: 12px;
+         }
+         
+-        /* Quando cards estao lado a lado no desktop largo (min-width: 1300px) */
+         @media (min-width: 1300px) {
+           .game-card-grid {
+             display: grid !important;
+             grid-template-columns: 1.4fr 0.9fr 1.1fr 1.2fr !important;
+-            grid-template-rows: auto !important;
++            grid-template-rows: 160px !important;
+             gap: 12px !important;
+-            padding: 12px 14px !important;
+-            align-items: start !important;
+-            height: auto !important;
+-            min-height: 155px !important;
++            padding: 10px 12px !important;
++            align-items: stretch !important;
++            height: 160px !important;
++            box-sizing: border-box !important;
+           }
+           
+           .game-card-grid > div {
+@@ -5286,8 +5245,7 @@ export default function PalpitesPage() {
+             flex-direction: column !important;
+             border-top: none !important;
+             padding-top: 0 !important;
+-            height: auto !important;
+-            min-height: min-content !important;
++            height: 100% !important;
+           }
+           
+           .team-name {
