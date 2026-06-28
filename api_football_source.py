@@ -190,8 +190,17 @@ def coletar_odds_pre_jogo_api(ligas_alvo_ids):
                                 odd_ah_fora_plus_15 = float(val.get("odd"))
                                 
                 if odd_casa and odd_empate and odd_fora:
+                    try:
+                        match_date_raw = f["fixture"]["date"]
+                        # Trata formato ISO com offset ou UTC
+                        dt_obj = datetime.fromisoformat(match_date_raw.replace("Z", "+00:00"))
+                        data_rotulo = dt_obj.strftime("%d/%m %H:%M")
+                        campeonato_com_data = f"[{data_rotulo}] {liga_nome}"
+                    except Exception:
+                        campeonato_com_data = liga_nome
+
                     partidas_consolidadas.append({
-                        "campeonato": liga_nome,
+                        "campeonato": campeonato_com_data,
                         "confronto": f"{home_team} x {away_team}",
                         "odd_casa": odd_casa,
                         "odd_empate": odd_empate,
