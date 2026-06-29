@@ -192,11 +192,25 @@ def coletar_odds_pre_jogo_api(ligas_alvo_ids):
                 if odd_casa and odd_empate and odd_fora:
                     try:
                         match_date_raw = f["fixture"]["date"]
-                        # Trata formato ISO com offset ou UTC
-                        dt_obj = datetime.fromisoformat(match_date_raw.replace("Z", "+00:00"))
-                        data_rotulo = dt_obj.strftime("%d/%m %H:%M")
+                        # Faz o split de "YYYY-MM-DDTHH:MM:SS..."
+                        t_split = match_date_raw.split('T')
+                        date_parts = t_split[0].split('-')
+                        time_parts = t_split[1].split(':')
+                        
+                        year = int(date_parts[0])
+                        month = int(date_parts[1])
+                        day = int(date_parts[2])
+                        hour = int(time_parts[0])
+                        minute = int(time_parts[1])
+                        
+                        # Converte do UTC da API para o fuso de Brasília (-3h)
+                        utc_dt = datetime(year, month, day, hour, minute, tzinfo=timezone.utc)
+                        brt_dt = utc_dt.astimezone(timezone(timedelta(hours=-3)))
+                        
+                        data_rotulo = brt_dt.strftime("%d/%m %H:%M")
                         campeonato_com_data = f"[{data_rotulo}] {liga_nome}"
-                    except Exception:
+                    except Exception as e:
+                        print(f"    [!] Erro ao parsear data da partida {match_date_raw}: {e}")
                         campeonato_com_data = liga_nome
 
                     partidas_consolidadas.append({
