@@ -2,23 +2,58 @@ import time
 import sys
 import os
 import traceback
+import requests
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente
+env_path = os.path.join(os.path.dirname(__file__), "frontend", ".env.local")
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
 print("============================================================")
 print("   INICIANDO MOTOR BACKEND EM LOOP (SCRAPER + POISSON)")
 print("============================================================")
 
-def run_orchestrator():
-    import main
-    main.main()
+def ping_auto_dispatch():
+    try:
+        app_url = os.getenv("NEXT_PUBLIC_APP_URL", "http://localhost:3000").rstrip("/")
+        url_auto = f"{app_url}/api/telegram/auto-dispatch"
+        headers = {"Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY')}"}
+        resp = requests.post(url_auto, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            res_json = resp.json()
+            palpites_status = res_json.get("palpites", {})
+            if palpites_status.get("dispatched"):
+                print(f"[{time.strftime('%H:%M:%S')}] [Auto-Broadcast] Palpites disparados com sucesso via API Next.js!")
+        else:
+            print(f"[{time.strftime('%H:%M:%S')}] [Auto-Broadcast] Status {resp.status_code} ao pingar Next.js")
+    except Exception as e:
+        print(f"[{time.strftime('%H:%M:%S')}] [Auto-Broadcast] Erro ao pingar Next.js auto-dispatch: {e}")
+
+last_scraper_run = 0
 
 while True:
-    try:
-        print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] [INFO] Iniciando ciclo de varredura e resolucao...")
-        run_orchestrator()
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [SUCCESS] Ciclo concluído com sucesso.")
-    except Exception as e:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [ERROR] Erro durante a execucao: {e}", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr)
+    current_time = time.time()
     
-    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [WAIT] Aguardando 5 minutos (300 segundos)...")
-    time.sleep(300)
+    # 1. Ping o auto-dispatch do Next.js a cada ciclo rápido (30 segundos)
+    ping_auto_dispatch()
+    
+    # 2. Executa a varredura completa do scraper a cada 5 minutos (300 segundos)
+    if current_time - last_scraper_run >= 300:
+        try:
+            print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] [INFO] Iniciando ciclo de varredura completa do Scraper...")
+            import main
+            import importlib
+            importlib.reload(main)
+            main.main()
+            last_scraper_run = time.time()
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [SUCCESS] Ciclo de varredura concluído.")
+        except Exception as e:
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [ERROR] Erro no Scraper: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+            # Tenta novamente em 1 minuto se falhar
+            last_scraper_run = time.time() - 240
+            
+    time.sleep(30)
