@@ -9,7 +9,7 @@ load_dotenv()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 DB_FILE = "telegram_users.json"
 
-def enviar_alerta_telegram(confronto, campeonato, mercado, odd_oferecida, odd_justa, ev, aposta_sugerida, is_live=False, chat_id=None):
+def enviar_alerta_telegram(confronto, campeonato, mercado, odd_oferecida, odd_justa, ev, aposta_sugerida, is_live=False, chat_id=None, template=None, image_url=None):
     """
     Formata e envia uma mensagem de Alerta +EV para o Telegram de um cliente específico ou de todos cadastrados.
     """
@@ -34,13 +34,11 @@ def enviar_alerta_telegram(confronto, campeonato, mercado, odd_oferecida, odd_ju
                 pass
                 
         if not clientes:
-            print("\033[93m[!] Nenhum cliente conectado no Telegram ainda. Ignorando disparo.\033[0m")
+            print("\033[93m[!] Nenhum cliente conectado no Telegram ainda. Ignorando disparo.\\033[0m")
             return False
 
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    
     # Formatação Visual da Mensagem
-    header = "🔴 <b>SINAL AO VIVO DETECTADO!</b>" if is_live else "⚽ <b>NOVO PALPITE PRÉ-JOGO!</b>"
+    header_val = "🔴 <b>SINAL AO VIVO DETECTADO!</b>" if is_live else "⚽ <b>NOVO PALPITE PRÉ-JOGO!</b>"
     
     # Extrair a porcentagem da aposta sugerida se vier no formato "R$ X.XX (Y.Y%)" ou similar
     pct_stake = aposta_sugerida
@@ -51,7 +49,8 @@ def enviar_alerta_telegram(confronto, campeonato, mercado, odd_oferecida, odd_ju
         except:
             pass
 
-    mensagem = f"""{header}
+    if not template:
+        template = """{header}
 
 🏆 <b>{campeonato}</b>
 ⚔️ <b>{confronto}</b>
@@ -59,28 +58,49 @@ def enviar_alerta_telegram(confronto, campeonato, mercado, odd_oferecida, odd_ju
 🎯 <b>Mercado:</b> {mercado}
 📈 <b>Odd recomendada:</b> {odd_oferecida}
 ⚖️ <b>Odd justa calculada:</b> {odd_justa}
-🔥 <b>Vantagem (EV):</b> +{ev:.2f}%
+🔥 <b>Vantagem (EV):</b> +{ev}%
 
-🛡️ <b>Gestão de Risco sugerida:</b> {pct_stake} da sua banca
-"""
+🛡️ <b>Gestão de Risco sugerida:</b> {stake} da sua banca"""
+
+    # Substituição segura de placeholders
+    mensagem = template
+    mensagem = mensagem.replace("{header}", header_val)
+    mensagem = mensagem.replace("{campeonato}", str(campeonato))
+    mensagem = mensagem.replace("{confronto}", str(confronto))
+    mensagem = mensagem.replace("{mercado}", str(mercado))
+    mensagem = mensagem.replace("{odd_oferecida}", str(odd_oferecida))
+    mensagem = mensagem.replace("{odd_recomendada}", str(odd_oferecida))
+    mensagem = mensagem.replace("{odd_justa}", str(odd_justa))
+    mensagem = mensagem.replace("{ev}", f"{ev:.2f}")
+    mensagem = mensagem.replace("{stake}", str(pct_stake))
 
     sucesso_geral = True
-    for chat_id in clientes:
-        payload = {
-            "chat_id": chat_id,
-            "text": mensagem,
-            "parse_mode": "HTML"
-        }
+    for c_id in clientes:
+        if image_url:
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+            payload = {
+                "chat_id": c_id,
+                "photo": image_url,
+                "caption": mensagem,
+                "parse_mode": "HTML"
+            }
+        else:
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            payload = {
+                "chat_id": c_id,
+                "text": mensagem,
+                "parse_mode": "HTML"
+            }
 
         try:
             response = requests.post(url, json=payload, timeout=10)
             if response.status_code == 200:
-                print(f"\033[94m[OK] Sinal disparado para o Cliente ID {chat_id}!\033[0m")
+                print(f"\033[94m[OK] Sinal disparado para o Cliente ID {c_id}!\033[0m")
             else:
-                print(f"\033[31m[X] Falha ao enviar para {chat_id}: {response.text}\033[0m")
+                print(f"\033[31m[X] Falha ao enviar para {c_id}: {response.text}\033[0m")
                 sucesso_geral = False
         except Exception as e:
-            print(f"\033[31m[X] Erro de rede no Telegram para {chat_id}: {e}\033[0m")
+            print(f"\033[31m[X] Erro de rede no Telegram para {c_id}: {e}\033[0m")
             sucesso_geral = False
             
     return sucesso_geral

@@ -35,12 +35,16 @@ def despachar_alertas_personalizados(confronto, campeonato, mercado, odd_ofereci
     probabilidade_real_pct = 100.0 / odd_justa if odd_justa > 0 else 50.0
 
     # Filtro dinâmico de EV Mínimo global para o grupo VIP (lido do Supabase)
+    alerta_template = None
+    alerta_image = None
     try:
         from database_connector import ler_configuracoes_saas
         settings = ler_configuracoes_saas()
         min_ev_grupo = float(settings.get('telegram_bot_min_ev', 5.0))
+        alerta_template = settings.get('telegram_alerta_ev_template')
+        alerta_image = settings.get('telegram_alerta_ev_image_url')
     except Exception as e:
-        print(f"[Dispatcher] Erro ao ler min_ev do Supabase: {e}. Usando fallback de 5.0%")
+        print(f"[Dispatcher] Erro ao ler configs do Supabase: {e}. Usando fallback.")
         min_ev_grupo = 5.0
 
     if ev_porcentagem < min_ev_grupo:
@@ -64,6 +68,8 @@ def despachar_alertas_personalizados(confronto, campeonato, mercado, odd_ofereci
         ev=ev_porcentagem,
         aposta_sugerida=aposta_sugerida_personalizada,
         is_live=is_live,
-        chat_id=vip_chat_id
+        chat_id=vip_chat_id,
+        template=alerta_template,
+        image_url=alerta_image
     )
 
