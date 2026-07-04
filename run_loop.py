@@ -13,7 +13,7 @@ else:
     load_dotenv()
 
 print("============================================================")
-print("   INICIANDO MOTOR BACKEND EM LOOP (SCRAPER + POISSON)")
+print("   INICIANDO MOTOR BACKEND EM LOOP (SCRAPER + POISSON)   ")
 print("============================================================")
 
 def ping_auto_dispatch():
@@ -33,15 +33,23 @@ def ping_auto_dispatch():
         print(f"[{time.strftime('%H:%M:%S')}] [Auto-Broadcast] Erro ao pingar Next.js auto-dispatch: {e}")
 
 last_scraper_run = 0
+last_dispatch_ping = 0
+
+# Intervalo do scraper: 2 horas (7200 segundos) para economizar requisições da API-Sports
+SCRAPER_INTERVAL = 7200
+# Intervalo do ping de auto-dispatch: 5 minutos (300 segundos)
+DISPATCH_PING_INTERVAL = 300
 
 while True:
     current_time = time.time()
-    
-    # 1. Ping o auto-dispatch do Next.js a cada ciclo rápido (30 segundos)
-    ping_auto_dispatch()
-    
-    # 2. Executa a varredura completa do scraper a cada 5 minutos (300 segundos)
-    if current_time - last_scraper_run >= 300:
+
+    # 1. Ping o auto-dispatch do Next.js a cada 5 minutos (era 30s - desperdício)
+    if current_time - last_dispatch_ping >= DISPATCH_PING_INTERVAL:
+        ping_auto_dispatch()
+        last_dispatch_ping = current_time
+
+    # 2. Executa a varredura completa do scraper a cada 2 HORAS (era 30 min - alto consumo)
+    if current_time - last_scraper_run >= SCRAPER_INTERVAL:
         try:
             print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] [INFO] Iniciando ciclo de varredura completa do Scraper...")
             import main
@@ -53,7 +61,7 @@ while True:
         except Exception as e:
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [ERROR] Erro no Scraper: {e}", file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
-            # Tenta novamente em 1 minuto se falhar
-            last_scraper_run = time.time() - 240
-            
-    time.sleep(30)
+            # Tenta novamente em 30 minutos se falhar
+            last_scraper_run = time.time() - (SCRAPER_INTERVAL - 1800)
+
+    time.sleep(60)
