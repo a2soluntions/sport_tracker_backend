@@ -146,7 +146,39 @@ def api_get(endpoint: str, params: dict = None, timeout: int = 15) -> dict | Non
         print("\033[31m[Guard] API_FOOTBALL_KEY não configurado. Chamada bloqueada.\033[0m")
         return None
 
+    # Verifica se a API está bloqueada ou orçamento excedido no Supabase
+    try:
+        if SUPABASE_URL and SUPABASE_KEY:
+            # 1. Busca configurações
+            resp_cfg = requests.get(
+                f"{SUPABASE_URL}/rest/v1/saas_settings?key=in.(api_sports_blocked,api_daily_budget)",
+                headers=_supabase_headers(),
+                timeout=5
+            )
+            if resp_cfg.status_code == 200:
+                cfgs = resp_cfg.json()
+                cfg_blocked = next((c for c in cfgs if c["key"] == "api_sports_blocked"), None)
+                cfg_budget = next((c for c in cfgs if c["key"] == "api_daily_budget"), None)
+                
+                is_blocked_manual = cfg_blocked and (cfg_blocked["value"] is True or str(cfg_blocked["value"]).lower() == "true")
+                limit_val = int(cfg_budget["value"]) if cfg_budget and cfg_budget["value"] else 500
+                
+                if is_blocked_manual:
+                    print("\033[31m[Guard] Chamada bloqueada no Python: API-Sports está DESATIVADA no painel admin.\033[0m")
+                    _registrar_chamada_supabase(endpoint, -1, bloqueada=True)
+                    return None
+
+                # 2. Conta consumo hoje
+                total_hoje = _buscar_total_hoje_supabase()
+                if total_hoje >= limit_val:
+                    print(f"\033[31m[Guard] Chamada bloqueada no Python: Orçamento diário ({total_hoje}/{limit_val}) excedido.\033[0m")
+                    _registrar_chamada_supabase(endpoint, -1, bloqueada=True)
+                    return None
+    except Exception as e:
+        print(f"[Guard] Aviso: Falha ao ler politicas de seguranca do Supabase: {e}")
+
     # 1. Circuit breaker por hora
+
     if not _circuit_breaker_ok():
         _registrar_chamada_supabase(endpoint, -1, bloqueada=True)
         return None
