@@ -37,8 +37,8 @@ last_dispatch_ping = 0
 
 # Intervalo do scraper: 2 horas (7200 segundos) para economizar requisições da API-Sports
 SCRAPER_INTERVAL = 7200
-# Intervalo do ping de auto-dispatch: 5 minutos (300 segundos)
-DISPATCH_PING_INTERVAL = 300
+# Intervalo do ping de auto-dispatch: 1 minuto (60 segundos) para precisão cirúrgica
+DISPATCH_PING_INTERVAL = 60
 
 while True:
     current_time = time.time()
