@@ -32,14 +32,18 @@ while time.time() - start_time < 120:
                     chat = update["message"]["chat"]
                     text = update["message"].get("text", "")
                     print(f"[DETECTADO] Mensagem recebida de {chat.get('title') or chat.get('username')}: '{text}' | ID: {chat.get('id')}")
+                elif "channel_post" in update:
+                    chat = update["channel_post"]["chat"]
+                    text = update["channel_post"].get("text", "")
+                    print(f"[DETECTADO] Mensagem de canal recebida em {chat.get('title')}: '{text}' | ID: {chat.get('id')}")
                 elif "my_chat_member" in update:
                     chat = update["my_chat_member"]["chat"]
                     print(f"[DETECTADO] Adicionado ao chat: {chat.get('title')} | ID: {chat.get('id')}")
                 
                 if chat and chat.get("id"):
-                    # Se for um grupo ou supergrupo
-                    if chat.get("type") in ["group", "supergroup"]:
-                        print(f"\n🚀 CHAT ID DO GRUPO ENCONTRADO: {chat['id']}\n")
+                    # Se for um grupo, supergrupo ou canal
+                    if chat.get("type") in ["group", "supergroup", "channel"]:
+                        print(f"\n🚀 CHAT ID DO CANAL/GRUPO ENCONTRADO: {chat['id']}\n")
                         found = True
                         
                         # Salvar no .env e frontend/.env.local automaticamente
