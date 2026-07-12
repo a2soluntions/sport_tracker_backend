@@ -1468,6 +1468,16 @@ export default function AnalysisPage() {
   const [advancedSelectedLeague, setAdvancedSelectedLeague] = useState('Todas');
   const [itemsToShow, setItemsToShow] = useState(10);
   const [playerTeamFilter, setPlayerTeamFilter] = useState('Todos');
+  
+  // Estados para Modal da Calculadora de Handicap Interativa
+  const [isHandicapModalOpen, setIsHandicapModalOpen] = useState(false);
+  const [activeCalculatorType, setActiveCalculatorType] = useState('asian'); // 'asian' ou 'european'
+  const [calcBetOnHome, setCalcBetOnHome] = useState(true);
+  const [calcHandicapLine, setCalcHandicapLine] = useState(0.0);
+  const [calcStake, setCalcStake] = useState('100');
+  const [calcOdd, setCalcOdd] = useState('1.90');
+  const [calcHomeScore, setCalcHomeScore] = useState(0);
+  const [calcAwayScore, setCalcAwayScore] = useState(0);
 
   const advancedFilteredMatches = useMemo(() => {
     if (advancedSelectedLeague === 'Todas') return matches.filter(m => matchesAllowedLeagues(m));
@@ -4830,6 +4840,44 @@ export default function AnalysisPage() {
                 animation: isLivePollingEnabled ? 'pulseKey 1.5s infinite' : 'none'
               }} />
             </button>
+
+            {/* Abrir calculadora de handicap interativa */}
+            <button
+              onClick={() => {
+                setCalcHomeScore(0);
+                setCalcAwayScore(0);
+                setCalcHandicapLine(activeCalculatorType === 'asian' ? 0.0 : 1.0);
+                setIsHandicapModalOpen(true);
+              }}
+              title="Abrir Calculadora de Handicap Interativa"
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'var(--bg-surface)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                opacity: 0.8,
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+                color: 'var(--brand-neon)'
+              }}
+              onMouseEnter={(e) => { 
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.borderColor = 'var(--brand-neon)';
+              }}
+              onMouseLeave={(e) => { 
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.opacity = '0.8';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+              }}
+            >
+              <Percent size={20} />
+            </button>
           </div>
 
           {/* Selected Match Analysis Layout */}
@@ -5094,29 +5142,44 @@ export default function AnalysisPage() {
                   </div>
 
                   {/* Percentage tags below */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.72rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-neon)' }}></div>
-                        <span style={{ color: '#fff', fontWeight: 'bold' }}>{translateTeamName(selectedMatch.home)}</span>
+                  {(() => {
+                    const maxVal = Math.max(probabilities.homeWin, probabilities.draw, probabilities.awayWin);
+                    const isHomeMax = probabilities.homeWin === maxVal;
+                    const isDrawMax = probabilities.draw === maxVal;
+                    const isAwayMax = probabilities.awayWin === maxVal;
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.72rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-neon)' }}></div>
+                            <span style={{ color: isHomeMax ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>
+                              {translateTeamName(selectedMatch.home)} {isHomeMax && '🔥'}
+                            </span>
+                          </div>
+                          <span style={{ color: isHomeMax ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{probabilities.homeWin}%</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#888' }}></div>
+                            <span style={{ color: isDrawMax ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: isDrawMax ? 'bold' : 'normal' }}>
+                              Empate {isDrawMax && '🔥'}
+                            </span>
+                          </div>
+                          <span style={{ color: isDrawMax ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: 'bold' }}>{probabilities.draw}%</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#b339ff' }}></div>
+                            <span style={{ color: isAwayMax ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>
+                              {translateTeamName(selectedMatch.away)} {isAwayMax && '🔥'}
+                            </span>
+                          </div>
+                          <span style={{ color: isAwayMax ? 'var(--brand-neon)' : '#b339ff', fontWeight: 'bold' }}>{probabilities.awayWin}%</span>
+                        </div>
                       </div>
-                      <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>{probabilities.homeWin}%</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#888' }}></div>
-                        <span style={{ color: 'var(--text-secondary)' }}>Empate</span>
-                      </div>
-                      <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>{probabilities.draw}%</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#b339ff' }}></div>
-                        <span style={{ color: '#fff', fontWeight: 'bold' }}>{translateTeamName(selectedMatch.away)}</span>
-                      </div>
-                      <span style={{ color: '#b339ff', fontWeight: 'bold' }}>{probabilities.awayWin}%</span>
-                    </div>
-                  </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -6011,6 +6074,371 @@ export default function AnalysisPage() {
       ) : (
         renderAdvancedSearchUI()
       )}
+
+      {/* POPUP INTERATIVO DA CALCULADORA DE HANDICAP (ASIÁTICO E EUROPEU) */}
+      {isHandicapModalOpen && selectedMatch && (() => {
+        const handicapLines = activeCalculatorType === 'asian' ? [
+          { value: 2.0, label: 'HA +2.0 (Vantagem extrema)' },
+          { value: 1.75, label: 'HA +1.75' },
+          { value: 1.5, label: 'HA +1.5' },
+          { value: 1.25, label: 'HA +1.25' },
+          { value: 1.0, label: 'HA +1.0' },
+          { value: 0.75, label: 'HA +0.75' },
+          { value: 0.5, label: 'HA +0.5 (Vitória Dupla)' },
+          { value: 0.25, label: 'HA +0.25' },
+          { value: 0.0, label: 'HA 0.0 (DNB / Reembolso)' },
+          { value: -0.25, label: 'HA -0.25' },
+          { value: -0.5, label: 'HA -0.5 (Vitória Simples)' },
+          { value: -0.75, label: 'HA -0.75' },
+          { value: -1.0, label: 'HA -1.0' },
+          { value: -1.25, label: 'HA -1.25' },
+          { value: -1.5, label: 'HA -1.5 (Vitória por 2+)' },
+          { value: -1.75, label: 'HA -1.75' },
+          { value: -2.0, label: 'HA -2.0' },
+        ] : [
+          { value: 3.0, label: 'HE +3' },
+          { value: 2.0, label: 'HE +2' },
+          { value: 1.0, label: 'HE +1' },
+          { value: 0.0, label: 'HE 0.0 (HE não possui handicap nulo)' },
+          { value: -1.0, label: 'HE -1 (Vitória por 2+)' },
+          { value: -2.0, label: 'HE -2 (Vitória por 3+)' },
+          { value: -3.0, label: 'HE -3' },
+        ];
+
+        // Processamento matemático
+        const scoreDiff = calcHomeScore - calcAwayScore;
+        const backingDiff = calcBetOnHome ? scoreDiff : -scoreDiff;
+        
+        let outcome = 'LOSS';
+        let netProfit = 0;
+        let returnMultiplier = 0;
+        const parsedStake = parseFloat(calcStake) || 0;
+        const parsedOdd = parseFloat(calcOdd) || 1.0;
+
+        if (activeCalculatorType === 'asian') {
+          const isQuarter = Math.abs(Math.round(calcHandicapLine * 100)) % 50 !== 0;
+          let line1 = calcHandicapLine;
+          let line2 = calcHandicapLine;
+          if (isQuarter) {
+            line1 = calcHandicapLine - 0.25;
+            line2 = calcHandicapLine + 0.25;
+          }
+
+          const evaluateLine = (l) => {
+            const simDiff = backingDiff + l;
+            if (simDiff > 0) return 'WIN';
+            if (simDiff === 0) return 'VOID';
+            return 'LOSS';
+          };
+
+          const res1 = evaluateLine(line1);
+          const res2 = evaluateLine(line2);
+
+          if (res1 === 'WIN' && res2 === 'WIN') {
+            outcome = 'WIN';
+            returnMultiplier = parsedOdd;
+          } else if (res1 === 'LOSS' && res2 === 'LOSS') {
+            outcome = 'LOSS';
+            returnMultiplier = 0;
+          } else if (res1 === 'VOID' && res2 === 'VOID') {
+            outcome = 'VOID';
+            returnMultiplier = 1.0;
+          } else if ((res1 === 'WIN' && res2 === 'VOID') || (res1 === 'VOID' && res2 === 'WIN')) {
+            outcome = 'HALF_WIN';
+            returnMultiplier = 0.5 + 0.5 * parsedOdd;
+          } else if ((res1 === 'LOSS' && res2 === 'VOID') || (res1 === 'VOID' && res2 === 'LOSS')) {
+            outcome = 'HALF_LOSS';
+            returnMultiplier = 0.5;
+          }
+        } else {
+          // Handicap Europeu (HE) - Não tem meio ganha/reembolso, é 3-way rígido.
+          const simDiff = backingDiff + calcHandicapLine;
+          if (simDiff > 0) {
+            outcome = 'WIN';
+            returnMultiplier = parsedOdd;
+          } else {
+            outcome = 'LOSS';
+            returnMultiplier = 0;
+          }
+        }
+
+        netProfit = (parsedStake * returnMultiplier) - parsedStake;
+
+        // Estilização do resultado simulado
+        let statusText = 'PERDIDA (PREJUÍZO TOTAL)';
+        let statusColor = '#FF1744';
+        let profitLabel = `-R$ ${Math.abs(netProfit).toFixed(2)}`;
+        let profitColor = '#FF1744';
+
+        if (outcome === 'WIN') {
+          statusText = 'GANHA (LUCRO TOTAL)';
+          statusColor = '#00E676';
+          profitLabel = `+R$ ${netProfit.toFixed(2)}`;
+          profitColor = 'var(--brand-neon)';
+        } else if (outcome === 'VOID') {
+          statusText = 'REEMBOLSADA (VALOR DEVOLVIDO)';
+          statusColor = '#FFEB3B';
+          profitLabel = 'R$ 0.00';
+          profitColor = '#fff';
+        } else if (outcome === 'HALF_WIN') {
+          statusText = 'METADE GANHA / METADE REEMBOLSADA';
+          statusColor = '#00E676';
+          profitLabel = `+R$ ${netProfit.toFixed(2)}`;
+          profitColor = 'var(--brand-neon)';
+        } else if (outcome === 'HALF_LOSS') {
+          statusText = 'METADE PERDIDA / METADE REEMBOLSADA';
+          statusColor = '#FF8F00';
+          profitLabel = `-R$ ${Math.abs(netProfit).toFixed(2)}`;
+          profitColor = '#FF8F00';
+        }
+
+        return (
+          <div 
+            onClick={() => setIsHandicapModalOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(5px)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 10002,
+              animation: 'fadeIn 0.2s ease-out'
+            }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '95%',
+                maxWidth: '800px',
+                background: '#0B0B0F',
+                border: '1px solid #1E1E24',
+                borderRadius: '16px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
+                position: 'relative'
+              }}
+            >
+              <button 
+                onClick={() => setIsHandicapModalOpen(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#888',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                ✕
+              </button>
+
+              <h2 style={{ margin: 0, fontSize: '1.15rem', color: '#fff', fontWeight: 'bold', borderBottom: '1px solid #1E1E24', paddingBottom: '12px' }}>
+                🧮 Calculadora de Handicap ({activeCalculatorType === 'asian' ? 'Asiático' : 'Europeu'})
+              </h2>
+
+              {/* Seletor do Tipo de Handicap */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => { setActiveCalculatorType('asian'); setCalcHandicapLine(0.0); }}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    background: activeCalculatorType === 'asian' ? 'var(--brand-neon)' : '#13131A',
+                    color: activeCalculatorType === 'asian' ? '#000' : '#888',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Asiático (AH)
+                </button>
+                <button
+                  onClick={() => { setActiveCalculatorType('european'); setCalcHandicapLine(1.0); }}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    background: activeCalculatorType === 'european' ? 'var(--brand-neon)' : '#13131A',
+                    color: activeCalculatorType === 'european' ? '#000' : '#888',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Europeu (EH)
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '24px' }}>
+                
+                {/* LADO CONFIGURAÇÃO */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  
+                  {/* Apostar em quem */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.68rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '6px' }}>
+                      Apostar em
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <button
+                        onClick={() => setCalcBetOnHome(true)}
+                        style={{
+                          background: calcBetOnHome ? 'transparent' : '#13131A',
+                          border: calcBetOnHome ? '1px solid var(--brand-neon)' : '1px solid #222',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          color: calcBetOnHome ? 'var(--brand-neon)' : '#ccc',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {translateTeamName(selectedMatch.home)} (Casa)
+                      </button>
+                      <button
+                        onClick={() => setCalcBetOnHome(false)}
+                        style={{
+                          background: !calcBetOnHome ? 'transparent' : '#13131A',
+                          border: !calcBetOnHome ? '1px solid var(--brand-neon)' : '1px solid #222',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          color: !calcBetOnHome ? 'var(--brand-neon)' : '#ccc',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {translateTeamName(selectedMatch.away)} (Fora)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Linha de handicap */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.68rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '6px' }}>
+                      Linha de Handicap
+                    </label>
+                    <select
+                      value={calcHandicapLine}
+                      onChange={(e) => setCalcHandicapLine(Number(e.target.value))}
+                      style={{
+                        width: '100%',
+                        background: '#13131A',
+                        border: '1px solid #222',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      {handicapLines.map((line, lIdx) => (
+                        <option key={lIdx} value={line.value}>{line.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Stake e Odd */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.68rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '6px' }}>Stake (R$)</label>
+                      <input 
+                        type="number"
+                        value={calcStake}
+                        onChange={(e) => setCalcStake(e.target.value)}
+                        style={{ width: '100%', background: '#13131A', border: '1px solid #222', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.68rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '6px' }}>Odd</label>
+                      <input 
+                        type="number"
+                        step="0.01"
+                        value={calcOdd}
+                        onChange={(e) => setCalcOdd(e.target.value)}
+                        style={{ width: '100%', background: '#13131A', border: '1px solid #222', padding: '10px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Placar Simulado */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.68rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '6px' }}>Simular Placar Final</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '0.62rem', color: '#666' }}>Gols Casa</span>
+                        <input 
+                          type="number" 
+                          value={calcHomeScore} 
+                          onChange={(e) => setCalcHomeScore(Number(e.target.value))} 
+                          style={{ width: '100%', background: '#13131A', border: '1px solid #222', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', textAlign: 'center', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <span style={{ color: '#888', fontWeight: 'bold', marginTop: '16px' }}>x</span>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '0.62rem', color: '#666' }}>Gols Fora</span>
+                        <input 
+                          type="number" 
+                          value={calcAwayScore} 
+                          onChange={(e) => setCalcAwayScore(Number(e.target.value))} 
+                          style={{ width: '100%', background: '#13131A', border: '1px solid #222', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', textAlign: 'center', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* LADO RESULTADO */}
+                <div style={{ background: '#13131A', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '16px' }}>
+                  
+                  <div style={{ textAlign: 'center' }}>
+                    <span style={{ display: 'block', fontSize: '0.62rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '6px' }}>Resultado Calculado</span>
+                    <strong style={{ color: statusColor, fontSize: '0.95rem' }}>{statusText}</strong>
+                  </div>
+
+                  <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
+                    <span style={{ display: 'block', fontSize: '0.62rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}>Retorno Líquido</span>
+                    <strong style={{ color: profitColor, fontSize: '1.4rem' }}>{profitLabel}</strong>
+                  </div>
+
+                  <div style={{ fontSize: '0.68rem', color: '#888', display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Placar da Simulação:</span>
+                      <strong style={{ color: '#fff' }}>{calcHomeScore} x {calcAwayScore}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Seleção com Handicap:</span>
+                      <strong style={{ color: 'var(--brand-neon)' }}>
+                        {calcBetOnHome 
+                          ? `${translateTeamName(selectedMatch.home)} (${calcHandicapLine > 0 ? '+' : ''}${calcHandicapLine})` 
+                          : `${translateTeamName(selectedMatch.away)} (${(-calcHandicapLine) > 0 ? '+' : ''}${-calcHandicapLine})`
+                        }
+                      </strong>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );
