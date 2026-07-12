@@ -2666,7 +2666,12 @@ export default function AnalysisPage() {
                           <tbody>
                             {advancedLeagueCompare.map((item, idx) => (
                               <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                                <td style={{ padding: '14px 8px', fontWeight: 'bold', color: '#fff' }}>{item.name}</td>
+                                <td style={{ padding: '14px 8px', fontWeight: 'bold', color: '#fff' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <img src={getTeamLogoUrl(item.name, item.teamId)} style={{ width: '18px', height: '18px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getTeamLogoUrl(item.name); }} />
+                                    <span>{item.name}</span>
+                                  </div>
+                                </td>
                                 <td style={{ padding: '14px 8px', textAlign: 'center', color: '#fff' }}>{item.over05HT}%</td>
                                 <td style={{ padding: '14px 8px', textAlign: 'center', color: '#fff' }}>{item.over05FT}%</td>
                                 <td style={{ padding: '14px 8px', textAlign: 'center', color: '#fff' }}>{item.over15FT}%</td>
@@ -2690,11 +2695,19 @@ export default function AnalysisPage() {
                 {advancedSubTab === 'confronto' && (
                   <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, width: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                      <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 'bold', margin: 0 }}>
+                      <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 'bold', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                         🆚 Confronto Direto e Comparativo Head-to-Head
                       </h4>
-                      <span style={{ background: 'rgba(204,255,0,0.08)', border: '1px solid rgba(204,255,0,0.2)', borderRadius: '20px', padding: '3px 12px', fontSize: '0.72rem', color: 'var(--brand-neon)', fontWeight: 'bold' }}>
-                        {advancedSelectedMatch ? `${advancedSelectedMatch.home} x ${advancedSelectedMatch.away}` : 'Selecione uma Partida'}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(204,255,0,0.08)', border: '1px solid rgba(204,255,0,0.2)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.72rem', color: 'var(--brand-neon)', fontWeight: 'bold' }}>
+                        {advancedSelectedMatch ? (
+                          <>
+                            <img src={advancedSelectedMatch.homeLogo || getTeamLogoUrl(advancedSelectedMatch.home, advancedSelectedMatch.homeTeamId)} style={{ width: '16px', height: '16px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.src = getTeamLogoUrl(advancedSelectedMatch.home); }} />
+                            <span>{advancedSelectedMatch.home}</span>
+                            <span style={{ color: '#666' }}>x</span>
+                            <img src={advancedSelectedMatch.awayLogo || getTeamLogoUrl(advancedSelectedMatch.away, advancedSelectedMatch.awayTeamId)} style={{ width: '16px', height: '16px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.src = getTeamLogoUrl(advancedSelectedMatch.away); }} />
+                            <span>{advancedSelectedMatch.away}</span>
+                          </>
+                        ) : 'Selecione uma Partida'}
                       </span>
                     </div>
 
@@ -2712,8 +2725,9 @@ export default function AnalysisPage() {
                         }}>
                           {/* Mandante */}
                           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                            <div style={{ color: 'var(--brand-neon)', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '12px' }}>
-                              🏠 {advancedSelectedMatch.home} (Casa)
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-neon)', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '12px' }}>
+                              <img src={advancedSelectedMatch.homeLogo || getTeamLogoUrl(advancedSelectedMatch.home, advancedSelectedMatch.homeTeamId)} style={{ width: '20px', height: '20px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.src = getTeamLogoUrl(advancedSelectedMatch.home); }} />
+                              <span>{advancedSelectedMatch.home} (Casa)</span>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -2737,8 +2751,9 @@ export default function AnalysisPage() {
 
                           {/* Visitante */}
                           <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                            <div style={{ color: '#ff8c42', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '12px' }}>
-                              🚀 {advancedSelectedMatch.away} (Fora)
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff8c42', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '12px' }}>
+                              <img src={advancedSelectedMatch.awayLogo || getTeamLogoUrl(advancedSelectedMatch.away, advancedSelectedMatch.awayTeamId)} style={{ width: '20px', height: '20px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.src = getTeamLogoUrl(advancedSelectedMatch.away); }} />
+                              <span>{advancedSelectedMatch.away} (Fora)</span>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -2767,9 +2782,19 @@ export default function AnalysisPage() {
                             <thead>
                               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)' }}>
                                 <th style={{ padding: '12px 8px', textAlign: 'left' }}>Métrica Comparativa</th>
-                                <th style={{ padding: '12px 8px' }}>{advancedSelectedMatch.home}</th>
+                                <th style={{ padding: '12px 8px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                    <img src={advancedSelectedMatch.homeLogo || getTeamLogoUrl(advancedSelectedMatch.home, advancedSelectedMatch.homeTeamId)} style={{ width: '14px', height: '14px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.src = getTeamLogoUrl(advancedSelectedMatch.home); }} />
+                                    <span>{advancedSelectedMatch.home}</span>
+                                  </div>
+                                </th>
                                 <th style={{ padding: '12px 8px', width: '80px' }}>vs</th>
-                                <th style={{ padding: '12px 8px' }}>{advancedSelectedMatch.away}</th>
+                                <th style={{ padding: '12px 8px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                    <img src={advancedSelectedMatch.awayLogo || getTeamLogoUrl(advancedSelectedMatch.away, advancedSelectedMatch.awayTeamId)} style={{ width: '14px', height: '14px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.src = getTeamLogoUrl(advancedSelectedMatch.away); }} />
+                                    <span>{advancedSelectedMatch.away}</span>
+                                  </div>
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
