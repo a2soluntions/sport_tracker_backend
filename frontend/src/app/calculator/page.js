@@ -5121,8 +5121,8 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            {/* Row 2: Indicadores de Força Técnica & Probabilidades de Gols */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+            {/* Row 2: Indicadores de Força Técnica, Gols & Handicaps */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               {/* Team Strengths and Forms */}
               <div style={{
                 background: 'var(--bg-surface)',
@@ -5205,6 +5205,83 @@ export default function AnalysisPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Projeção de Handicaps Asiáticos (AH) */}
+              <div style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '16px',
+                padding: '12px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px' }}>
+                  <TrendingUp size={18} color="var(--brand-neon)" />
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#fff', margin: 0 }}>Handicap Asiático Calculado</h3>
+                </div>
+
+                {(() => {
+                  const hWin = probabilities.homeWin;
+                  const aWin = probabilities.awayWin;
+                  const draw = probabilities.draw;
+
+                  const homeAH_plus05 = Math.min(99, hWin + draw);
+                  const awayAH_plus05 = Math.min(99, aWin + draw);
+
+                  let bestHandicap = '';
+                  let bestProb = 0;
+                  let colorTheme = 'var(--brand-neon)';
+
+                  if (homeAH_plus05 >= 75) {
+                    bestHandicap = `${translateTeamName(selectedMatch.home)} AH +0.5`;
+                    bestProb = homeAH_plus05;
+                  } else if (awayAH_plus05 >= 75) {
+                    bestHandicap = `${translateTeamName(selectedMatch.away)} AH +0.5`;
+                    bestProb = awayAH_plus05;
+                    colorTheme = '#ff8c42';
+                  } else if (hWin >= 55) {
+                    bestHandicap = `${translateTeamName(selectedMatch.home)} AH -0.5`;
+                    bestProb = hWin;
+                  } else if (aWin >= 55) {
+                    bestHandicap = `${translateTeamName(selectedMatch.away)} AH -0.5`;
+                    bestProb = aWin;
+                    colorTheme = '#ff8c42';
+                  } else {
+                    bestHandicap = `${translateTeamName(hWin >= aWin ? selectedMatch.home : selectedMatch.away)} AH 0.0`;
+                    bestProb = Math.min(99, Math.max(hWin, aWin) + draw);
+                  }
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', display: 'block', textTransform: 'uppercase', marginBottom: '2px' }}>Linha mais Fiel</span>
+                        <strong style={{ color: colorTheme, fontSize: '0.85rem' }}>{bestHandicap}</strong>
+                        <span style={{ display: 'block', fontSize: '0.68rem', color: '#fff', marginTop: '2px' }}>Probabilidade: {bestProb}%</span>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.7rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>AH -0.5 Casa (Vence):</span>
+                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{hWin}%</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>AH +0.5 Casa (Dupla):</span>
+                          <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>{homeAH_plus05}%</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>AH -0.5 Fora (Vence):</span>
+                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{aWin}%</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>AH +0.5 Fora (Dupla):</span>
+                          <span style={{ color: '#ff8c42', fontWeight: 'bold' }}>{awayAH_plus05}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Goals Probabilities */}
