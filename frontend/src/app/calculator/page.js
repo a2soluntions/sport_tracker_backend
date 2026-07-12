@@ -1467,6 +1467,7 @@ export default function AnalysisPage() {
   const [advancedSelectedMatch, setAdvancedSelectedMatch] = useState(null);
   const [advancedSelectedLeague, setAdvancedSelectedLeague] = useState('Todas');
   const [itemsToShow, setItemsToShow] = useState(10);
+  const [playerTeamFilter, setPlayerTeamFilter] = useState('Todos');
 
   const advancedFilteredMatches = useMemo(() => {
     if (advancedSelectedLeague === 'Todas') return matches.filter(m => matchesAllowedLeagues(m));
@@ -2410,95 +2411,131 @@ export default function AnalysisPage() {
             ) : (
               <>
                 {/* 1. MODO JOGADORES (TABELA CLÁSSICA COM PERCENTUAIS E PROJEÇÃO) */}
-                {advancedSubTab === 'jogadores' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                      <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                        🔥 Projeções e Probabilidades de Jogadores ({selectedStat})
-                      </h4>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
-                        <select
-                          value={itemsToShow}
-                          onChange={(e) => setItemsToShow(Number(e.target.value))}
-                          style={{
-                            background: '#0a0a0f',
-                            border: '1px solid var(--border-color)',
-                            color: '#fff',
-                            fontSize: '0.72rem',
-                            padding: '4px 8px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            outline: 'none'
-                          }}
-                        >
-                          <option value="5">5 itens</option>
-                          <option value="10">10 itens</option>
-                          <option value="15">15 itens</option>
-                          <option value="20">20 itens</option>
-                          <option value="999">Todos</option>
-                        </select>
-                      </div>
-                    </div>
+                {advancedSubTab === 'jogadores' && (() => {
+                  // Extrai os times únicos da lista de jogadores encontrados
+                  const uniqueTeams = Array.from(new Set(searchResults.map(item => item.team).filter(Boolean))).sort();
+                  
+                  // Filtra os resultados conforme o time selecionado
+                  const filteredPlayers = playerTeamFilter === 'Todos' 
+                    ? searchResults 
+                    : searchResults.filter(item => item.team === playerTeamFilter);
 
-                    {searchResults.length === 0 ? (
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textAlign: 'center', padding: '40px 0' }}>Nenhum jogador encontrado.</div>
-                    ) : (
-                      <div style={{ flex: 1, overflowY: 'auto', paddingRight: '6px', overflowX: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left', tableLayout: 'fixed' }}>
-                          <thead>
-                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                              <th style={{ padding: '12px 8px', width: '25%' }}>Jogador</th>
-                              <th style={{ padding: '12px 8px', width: '21%' }}>Partida</th>
-                              <th style={{ padding: '12px 8px', width: '9%', textAlign: 'center' }}>Média</th>
-                              <th style={{ padding: '12px 8px', width: '21%', textAlign: 'center' }}>Últimos 5</th>
-                              <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center', color: 'var(--brand-neon)' }}>+0.5</th>
-                              <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center', color: 'var(--brand-neon)' }}>+1.5</th>
-                              <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center', color: 'var(--brand-neon)' }}>+2.5</th>
-                              <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center' }}>Nota</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {searchResults.slice(0, Number(itemsToShow)).map((item, idx) => (
-                              <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                                <td style={{ padding: '12px 8px', width: '25%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  <strong style={{ color: '#fff', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</strong>
-                                  <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.team} • {item.age} anos</span>
-                                </td>
-                                <td style={{ padding: '12px 8px', width: '21%', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.match}</td>
-                                <td style={{ padding: '12px 8px', width: '9%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.average}</td>
-                                <td style={{ padding: '12px 8px', width: '21%', textAlign: 'center' }}>
-                                  <div style={{ display: 'flex', gap: '3px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                    {item.lastMatches.map((val, mIdx) => (
-                                      <span
-                                        key={mIdx}
-                                        style={{
-                                          padding: '2px 5px',
-                                          borderRadius: '3px',
-                                          fontSize: '0.62rem',
-                                          background: val > (item.average * 0.8) ? 'rgba(204,255,0,0.1)' : 'rgba(255,255,255,0.02)',
-                                          color: val > (item.average * 0.8) ? 'var(--brand-neon)' : 'var(--text-secondary)'
-                                        }}
-                                      >
-                                        {val}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </td>
-                                <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: 'var(--brand-neon)' }}>{item.over05}%</td>
-                                <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.over15}%</td>
-                                <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.over25}%</td>
-                                <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center' }}>
-                                  <span style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', padding: '3px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{item.rate}</span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                        <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                          🔥 Projeções e Probabilidades de Jogadores ({selectedStat})
+                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          {/* Filtro por Time */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Time:</span>
+                            <select
+                              value={playerTeamFilter}
+                              onChange={(e) => setPlayerTeamFilter(e.target.value)}
+                              style={{
+                                background: '#0a0a0f',
+                                border: '1px solid var(--border-color)',
+                                color: '#fff',
+                                fontSize: '0.72rem',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                outline: 'none'
+                              }}
+                            >
+                              <option value="Todos">Todos</option>
+                              {uniqueTeams.map((teamName, tIdx) => (
+                                <option key={tIdx} value={teamName}>{teamName}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
+                            <select
+                              value={itemsToShow}
+                              onChange={(e) => setItemsToShow(Number(e.target.value))}
+                              style={{
+                                background: '#0a0a0f',
+                                border: '1px solid var(--border-color)',
+                                color: '#fff',
+                                fontSize: '0.72rem',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                outline: 'none'
+                              }}
+                            >
+                              <option value="5">5 itens</option>
+                              <option value="10">10 itens</option>
+                              <option value="15">15 itens</option>
+                              <option value="20">20 itens</option>
+                              <option value="999">Todos</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      {filteredPlayers.length === 0 ? (
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textAlign: 'center', padding: '40px 0' }}>Nenhum jogador correspondente.</div>
+                      ) : (
+                        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '6px', overflowX: 'hidden' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left', tableLayout: 'fixed' }}>
+                            <thead>
+                              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
+                                <th style={{ padding: '12px 8px', width: '25%' }}>Jogador</th>
+                                <th style={{ padding: '12px 8px', width: '21%' }}>Partida</th>
+                                <th style={{ padding: '12px 8px', width: '9%', textAlign: 'center' }}>Média</th>
+                                <th style={{ padding: '12px 8px', width: '21%', textAlign: 'center' }}>Últimos 5</th>
+                                <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center', color: 'var(--brand-neon)' }}>+0.5</th>
+                                <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center', color: 'var(--brand-neon)' }}>+1.5</th>
+                                <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center', color: 'var(--brand-neon)' }}>+2.5</th>
+                                <th style={{ padding: '12px 8px', width: '8%', textAlign: 'center' }}>Nota</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredPlayers.slice(0, Number(itemsToShow)).map((item, idx) => (
+                                <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                  <td style={{ padding: '12px 8px', width: '25%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <strong style={{ color: '#fff', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</strong>
+                                    <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.team} • {item.age} anos</span>
+                                  </td>
+                                  <td style={{ padding: '12px 8px', width: '21%', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.match}</td>
+                                  <td style={{ padding: '12px 8px', width: '9%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.average}</td>
+                                  <td style={{ padding: '12px 8px', width: '21%', textAlign: 'center' }}>
+                                    <div style={{ display: 'flex', gap: '3px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                      {item.lastMatches.map((val, mIdx) => (
+                                        <span
+                                          key={mIdx}
+                                          style={{
+                                            padding: '2px 5px',
+                                            borderRadius: '3px',
+                                            fontSize: '0.62rem',
+                                            background: val > (item.average * 0.8) ? 'rgba(204,255,0,0.1)' : 'rgba(255,255,255,0.02)',
+                                            color: val > (item.average * 0.8) ? 'var(--brand-neon)' : 'var(--text-secondary)'
+                                          }}
+                                        >
+                                          {val}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: 'var(--brand-neon)' }}>{item.over05}%</td>
+                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.over15}%</td>
+                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.over25}%</td>
+                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center' }}>
+                                    <span style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', padding: '3px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{item.rate}</span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* 2. MODO TIMES (MOCKUP 2: MATRIZ DE LINHA DO TEMPO) */}
                 {advancedSubTab === 'times' && (
