@@ -6374,29 +6374,57 @@ export default function AnalysisPage() {
                     </div>
                   </div>
 
-                  {/* Placar Simulado */}
+                  {/* Placar Simulado com Setas de Ajuste */}
                   <div>
                     <label style={{ display: 'block', fontSize: '0.68rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '6px' }}>Simular Placar Final</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      
+                      {/* Gols Casa com Controles */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span style={{ fontSize: '0.62rem', color: '#666' }}>Gols Casa</span>
-                        <input 
-                          type="number" 
-                          value={calcHomeScore} 
-                          onChange={(e) => setCalcHomeScore(Number(e.target.value))} 
-                          style={{ width: '100%', background: '#13131A', border: '1px solid #222', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', textAlign: 'center', boxSizing: 'border-box' }}
-                        />
+                        <span style={{ fontSize: '0.62rem', color: '#666', textAlign: 'center' }}>Gols Casa</span>
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#13131A', border: '1px solid #222', borderRadius: '8px', overflow: 'hidden' }}>
+                          <button
+                            onClick={() => setCalcHomeScore(prev => Math.max(0, prev - 1))}
+                            style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', width: '32px', height: '36px', cursor: 'pointer', outline: 'none' }}
+                          >
+                            -
+                          </button>
+                          <span style={{ flex: 1, color: '#fff', fontSize: '0.85rem', fontWeight: 'bold', textAlign: 'center' }}>
+                            {calcHomeScore}
+                          </span>
+                          <button
+                            onClick={() => setCalcHomeScore(prev => prev + 1)}
+                            style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', width: '32px', height: '36px', cursor: 'pointer', outline: 'none' }}
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
+
                       <span style={{ color: '#888', fontWeight: 'bold', marginTop: '16px' }}>x</span>
+
+                      {/* Gols Fora com Controles */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span style={{ fontSize: '0.62rem', color: '#666' }}>Gols Fora</span>
-                        <input 
-                          type="number" 
-                          value={calcAwayScore} 
-                          onChange={(e) => setCalcAwayScore(Number(e.target.value))} 
-                          style={{ width: '100%', background: '#13131A', border: '1px solid #222', padding: '8px', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', textAlign: 'center', boxSizing: 'border-box' }}
-                        />
+                        <span style={{ fontSize: '0.62rem', color: '#666', textAlign: 'center' }}>Gols Fora</span>
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#13131A', border: '1px solid #222', borderRadius: '8px', overflow: 'hidden' }}>
+                          <button
+                            onClick={() => setCalcAwayScore(prev => Math.max(0, prev - 1))}
+                            style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', width: '32px', height: '36px', cursor: 'pointer', outline: 'none' }}
+                          >
+                            -
+                          </button>
+                          <span style={{ flex: 1, color: '#fff', fontSize: '0.85rem', fontWeight: 'bold', textAlign: 'center' }}>
+                            {calcAwayScore}
+                          </span>
+                          <button
+                            onClick={() => setCalcAwayScore(prev => prev + 1)}
+                            style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', width: '32px', height: '36px', cursor: 'pointer', outline: 'none' }}
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
+
                     </div>
                   </div>
 
