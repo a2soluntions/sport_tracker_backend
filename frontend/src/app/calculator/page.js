@@ -2531,9 +2531,15 @@ export default function AnalysisPage() {
                                       ))}
                                     </div>
                                   </td>
-                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: 'var(--brand-neon)' }}>{item.over05}%</td>
-                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.over15}%</td>
-                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{item.over25}%</td>
+                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: item.over05 >= 70 ? 'var(--brand-neon)' : '#fff' }}>
+                                    {item.over05}% {item.over05 >= 70 && '🔥'}
+                                  </td>
+                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: item.over15 >= 70 ? 'var(--brand-neon)' : '#fff' }}>
+                                    {item.over15}% {item.over15 >= 70 && '🔥'}
+                                  </td>
+                                  <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center', fontWeight: 'bold', color: item.over25 >= 70 ? 'var(--brand-neon)' : '#fff' }}>
+                                    {item.over25}% {item.over25 >= 70 && '🔥'}
+                                  </td>
                                   <td style={{ padding: '12px 8px', width: '8%', textAlign: 'center' }}>
                                     <span style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', padding: '3px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{item.rate}</span>
                                   </td>
@@ -5377,44 +5383,52 @@ export default function AnalysisPage() {
                   {/* Over 0.5 */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#fff', fontWeight: '500', marginBottom: '4px' }}>
-                      <span>Mais de 0.5 Gols</span>
-                      <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>{probabilities.over05}%</span>
+                      <span style={{ color: probabilities.over05 >= 70 ? 'var(--brand-neon)' : '#fff' }}>
+                        Mais de 0.5 Gols {probabilities.over05 >= 70 && '🔥'}
+                      </span>
+                      <span style={{ color: probabilities.over05 >= 70 ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{probabilities.over05}%</span>
                     </div>
                     <div style={{ height: '6px', background: 'var(--bg-surface-light)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${probabilities.over05}%`, height: '100%', background: 'var(--brand-neon)' }}></div>
+                      <div style={{ width: `${probabilities.over05}%`, height: '100%', background: probabilities.over05 >= 70 ? 'var(--brand-neon)' : '#b339ff' }}></div>
                     </div>
                   </div>
 
                   {/* Over 1.5 */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#fff', fontWeight: '500', marginBottom: '4px' }}>
-                      <span>Mais de 1.5 Gols</span>
-                      <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>{probabilities.over15}%</span>
+                      <span style={{ color: probabilities.over15 >= 70 ? 'var(--brand-neon)' : '#fff' }}>
+                        Mais de 1.5 Gols {probabilities.over15 >= 70 && '🔥'}
+                      </span>
+                      <span style={{ color: probabilities.over15 >= 70 ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{probabilities.over15}%</span>
                     </div>
                     <div style={{ height: '6px', background: 'var(--bg-surface-light)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${probabilities.over15}%`, height: '100%', background: 'var(--brand-neon)' }}></div>
+                      <div style={{ width: `${probabilities.over15}%`, height: '100%', background: probabilities.over15 >= 70 ? 'var(--brand-neon)' : '#b339ff' }}></div>
                     </div>
                   </div>
 
                   {/* Over 2.5 */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#fff', fontWeight: '500', marginBottom: '4px' }}>
-                      <span>Mais de 2.5 Gols</span>
-                      <span style={{ color: probabilities.over25 > 55 ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{probabilities.over25}%</span>
+                      <span style={{ color: probabilities.over25 >= 70 ? 'var(--brand-neon)' : '#fff' }}>
+                        Mais de 2.5 Gols {probabilities.over25 >= 70 && '🔥'}
+                      </span>
+                      <span style={{ color: probabilities.over25 >= 70 ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{probabilities.over25}%</span>
                     </div>
                     <div style={{ height: '6px', background: 'var(--bg-surface-light)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${probabilities.over25}%`, height: '100%', background: probabilities.over25 > 55 ? 'var(--brand-neon)' : '#b339ff' }}></div>
+                      <div style={{ width: `${probabilities.over25}%`, height: '100%', background: probabilities.over25 >= 70 ? 'var(--brand-neon)' : '#b339ff' }}></div>
                     </div>
                   </div>
 
                   {/* BTTS */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#fff', fontWeight: '500', marginBottom: '4px' }}>
-                      <span>Ambos Marcam (BTTS)</span>
-                      <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>{probabilities.btts}%</span>
+                      <span style={{ color: probabilities.btts >= 70 ? 'var(--brand-neon)' : '#fff' }}>
+                        Ambos Marcam (BTTS) {probabilities.btts >= 70 && '🔥'}
+                      </span>
+                      <span style={{ color: probabilities.btts >= 70 ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{probabilities.btts}%</span>
                     </div>
                     <div style={{ height: '6px', background: 'var(--bg-surface-light)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${probabilities.btts}%`, height: '100%', background: 'var(--brand-neon)' }}></div>
+                      <div style={{ width: `${probabilities.btts}%`, height: '100%', background: probabilities.btts >= 70 ? 'var(--brand-neon)' : '#b339ff' }}></div>
                     </div>
                   </div>
                 </div>
