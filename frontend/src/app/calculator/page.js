@@ -5316,30 +5316,40 @@ export default function AnalysisPage() {
                     bestProb = Math.min(99, Math.max(hWin, aWin) + draw);
                   }
 
+                  const maxHandicapVal = Math.max(hWin, homeAH_plus05, aWin, awayAH_plus05);
+
                   return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
                         <span style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', display: 'block', textTransform: 'uppercase', marginBottom: '2px' }}>Linha mais Fiel</span>
-                        <strong style={{ color: colorTheme, fontSize: '0.85rem' }}>{bestHandicap}</strong>
+                        <strong style={{ color: 'var(--brand-neon)', fontSize: '0.85rem' }}>{bestHandicap} 🔥</strong>
                         <span style={{ display: 'block', fontSize: '0.68rem', color: '#fff', marginTop: '2px' }}>Probabilidade: {bestProb}%</span>
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--text-secondary)' }}>AH -0.5 Casa (Vence):</span>
-                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{hWin}%</span>
+                          <span style={{ color: hWin === maxHandicapVal ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: hWin === maxHandicapVal ? 'bold' : 'normal' }}>
+                            AH -0.5 Casa (Vence) {hWin === maxHandicapVal && '🔥'}:
+                          </span>
+                          <span style={{ color: hWin === maxHandicapVal ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{hWin}%</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--text-secondary)' }}>AH +0.5 Casa (Dupla):</span>
-                          <span style={{ color: 'var(--brand-neon)', fontWeight: 'bold' }}>{homeAH_plus05}%</span>
+                          <span style={{ color: homeAH_plus05 === maxHandicapVal ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: homeAH_plus05 === maxHandicapVal ? 'bold' : 'normal' }}>
+                            AH +0.5 Casa (Dupla) {homeAH_plus05 === maxHandicapVal && '🔥'}:
+                          </span>
+                          <span style={{ color: homeAH_plus05 === maxHandicapVal ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{homeAH_plus05}%</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--text-secondary)' }}>AH -0.5 Fora (Vence):</span>
-                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{aWin}%</span>
+                          <span style={{ color: aWin === maxHandicapVal ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: aWin === maxHandicapVal ? 'bold' : 'normal' }}>
+                            AH -0.5 Fora (Vence) {aWin === maxHandicapVal && '🔥'}:
+                          </span>
+                          <span style={{ color: aWin === maxHandicapVal ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{aWin}%</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--text-secondary)' }}>AH +0.5 Fora (Dupla):</span>
-                          <span style={{ color: '#ff8c42', fontWeight: 'bold' }}>{awayAH_plus05}%</span>
+                          <span style={{ color: awayAH_plus05 === maxHandicapVal ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: awayAH_plus05 === maxHandicapVal ? 'bold' : 'normal' }}>
+                            AH +0.5 Fora (Dupla) {awayAH_plus05 === maxHandicapVal && '🔥'}:
+                          </span>
+                          <span style={{ color: awayAH_plus05 === maxHandicapVal ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{awayAH_plus05}%</span>
                         </div>
                       </div>
                     </div>
