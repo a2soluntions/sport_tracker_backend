@@ -5021,7 +5021,7 @@ export default function AnalysisPage() {
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
-              minHeight: '815px',
+              minHeight: '660px',
               height: 'auto',
               boxSizing: 'border-box'
             }}>
