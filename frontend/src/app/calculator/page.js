@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   Calculator, Trophy, Zap, Activity, Info, BarChart2, Star, Shield, 
   HelpCircle, ArrowRight, Sparkles, TrendingUp, TrendingDown, RefreshCw, Calendar, 
-  Users, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, Clock, Percent
+  Users, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, Clock, Percent, Thermometer
 } from 'lucide-react';
 
 // Factorial helper for Poisson
@@ -5540,9 +5540,11 @@ export default function AnalysisPage() {
                               <span style={{ color: '#aaa' }}>xG Projetado &lt; 2.5:</span>
                               <strong style={{ color: isLowGoalsAverage ? 'var(--brand-neon)' : '#ff3d00' }}>{isLowGoalsAverage ? 'Sim' : 'Não'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ color: '#aaa' }}>Probabilidade Under 2.5:</span>
-                              <strong style={{ color: isApproved25 ? 'var(--brand-neon)' : '#ff3d00' }}>{under25Prob}%</strong>
+                              <strong style={{ color: under25Prob >= 65 ? 'var(--brand-neon)' : '#fff', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                {under25Prob}% {under25Prob >= 65 && <Thermometer size={12} color="var(--brand-neon)" />}
+                              </strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                               <span style={{ color: '#aaa' }}>Odd Justa Estimada:</span>
@@ -5589,9 +5591,11 @@ export default function AnalysisPage() {
                               <span style={{ color: '#aaa' }}>xG Projetado &lt; 2.5:</span>
                               <strong style={{ color: isLowGoalsAverage ? 'var(--brand-neon)' : '#ff3d00' }}>{isLowGoalsAverage ? 'Sim' : 'Não'}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ color: '#aaa' }}>Probabilidade Under 3.5:</span>
-                              <strong style={{ color: isHistoryUnder35 ? 'var(--brand-neon)' : '#ff3d00' }}>{under35Prob}%</strong>
+                              <strong style={{ color: under35Prob >= 65 ? 'var(--brand-neon)' : '#fff', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                {under35Prob}% {under35Prob >= 65 && <Thermometer size={12} color="var(--brand-neon)" />}
+                              </strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                               <span style={{ color: '#aaa' }}>Odd Justa Estimada:</span>
@@ -5717,9 +5721,11 @@ export default function AnalysisPage() {
                               <span style={{ color: '#aaa' }}>xG Projetado Total:</span>
                               <strong style={{ color: isHighGoalsAverage ? 'var(--brand-neon)' : '#ff3d00' }}>{totalExpectedGoals.toFixed(2)}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ color: '#aaa' }}>Probabilidade Over 1.5:</span>
-                              <strong style={{ color: isHistoryOver15 ? 'var(--brand-neon)' : '#ff3d00' }}>{over15Prob}%</strong>
+                              <strong style={{ color: over15Prob >= 65 ? 'var(--brand-neon)' : '#fff', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                {over15Prob}% {over15Prob >= 65 && <Thermometer size={12} color="var(--brand-neon)" />}
+                              </strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                               <span style={{ color: '#aaa' }}>Odd Justa Estimada:</span>
@@ -5766,9 +5772,11 @@ export default function AnalysisPage() {
                               <span style={{ color: '#aaa' }}>xG Projetado Total:</span>
                               <strong style={{ color: isApproved25 ? 'var(--brand-neon)' : '#ff3d00' }}>{totalExpectedGoals.toFixed(2)}</strong>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ color: '#aaa' }}>Probabilidade Over 2.5:</span>
-                              <strong style={{ color: isHistoryOver25 ? 'var(--brand-neon)' : '#ff3d00' }}>{over25Prob}%</strong>
+                              <strong style={{ color: over25Prob >= 65 ? 'var(--brand-neon)' : '#fff', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                {over25Prob}% {over25Prob >= 65 && <Thermometer size={12} color="var(--brand-neon)" />}
+                              </strong>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                               <span style={{ color: '#aaa' }}>Odd Justa Estimada:</span>
