@@ -5081,117 +5081,131 @@ export default function AnalysisPage() {
             }}>
               {/* Row 1: Recomendação +EV & Cálculo de Vitória (1X2) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-              {/* AI Predictions / Insights */}
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(204, 255, 0, 0.04) 0%, rgba(179, 57, 255, 0.02) 100%)',
-                border: '1px solid rgba(204, 255, 0, 0.15)',
-                borderRadius: '16px',
-                padding: '12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                position: 'relative',
-                justifyContent: 'space-between'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sparkles size={16} color="var(--brand-neon)" />
-                  <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--brand-neon)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Recomendação +EV Baseada em IA
-                  </span>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fff', display: 'block' }}>
-                    {aiInsight.recommendation}
-                  </span>
-                  <span style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 'bold',
-                    background: 'rgba(204, 255, 0, 0.12)',
-                    color: 'var(--brand-neon)',
-                    padding: '4px 10px',
-                    borderRadius: '4px',
-                    display: 'inline-block',
-                    marginTop: '6px'
-                  }}>
-                    Confiança: {aiInsight.confidence}
-                  </span>
-                </div>
-
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
-                  {aiInsight.rationale}
-                </p>
-              </div>
-
-              {/* Probability 1X2 Card */}
-              <div style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '16px',
-                padding: '12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                justifyContent: 'space-between'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px' }}>
-                  <TrendingUp size={18} color="var(--brand-neon)" />
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#fff', margin: 0 }}>Cálculo de Vitória (1X2)</h3>
-                </div>
-
-                {/* Segmented horizontal percentage bar */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ height: '14px', background: 'var(--bg-surface-light)', borderRadius: '7px', display: 'flex', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.02)' }}>
-                    <div style={{ width: `${probabilities.homeWin}%`, background: 'var(--brand-neon)', transition: 'width 0.5s' }} title={`Casa: ${probabilities.homeWin}%`}></div>
-                    <div style={{ width: `${probabilities.draw}%`, background: '#888', transition: 'width 0.5s' }} title={`Empate: ${probabilities.draw}%`}></div>
-                    <div style={{ width: `${probabilities.awayWin}%`, background: '#b339ff', transition: 'width 0.5s' }} title={`Fora: ${probabilities.awayWin}%`}></div>
+                {/* AI Predictions / Insights */}
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(204, 255, 0, 0.04) 0%, rgba(179, 57, 255, 0.02) 100%)',
+                  border: '1px solid rgba(204, 255, 0, 0.15)',
+                  borderRadius: '16px',
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  position: 'relative',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sparkles size={16} color="var(--brand-neon)" />
+                    <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--brand-neon)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Recomendação +EV Baseada em IA
+                    </span>
                   </div>
 
-                  {/* Percentage tags below */}
-                  {(() => {
-                    const maxVal = Math.max(probabilities.homeWin, probabilities.draw, probabilities.awayWin);
-                    const isHomeMax = probabilities.homeWin === maxVal;
-                    const isDrawMax = probabilities.draw === maxVal;
-                    const isAwayMax = probabilities.awayWin === maxVal;
+                  <div>
+                    <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#fff', display: 'block' }}>
+                      {aiInsight.recommendation}
+                    </span>
+                    <span style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 'bold',
+                      background: 'rgba(204, 255, 0, 0.12)',
+                      color: 'var(--brand-neon)',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      display: 'inline-block',
+                      marginTop: '6px'
+                    }}>
+                      Confiança: {aiInsight.confidence}
+                    </span>
+                  </div>
 
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.72rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-neon)' }}></div>
-                            <span style={{ color: isHomeMax ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>
-                              {translateTeamName(selectedMatch.home)} {isHomeMax && '🔥'}
-                            </span>
-                          </div>
-                          <span style={{ color: isHomeMax ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>{probabilities.homeWin}%</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#888' }}></div>
-                            <span style={{ color: isDrawMax ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: isDrawMax ? 'bold' : 'normal' }}>
-                              Empate {isDrawMax && '🔥'}
-                            </span>
-                          </div>
-                          <span style={{ color: isDrawMax ? 'var(--brand-neon)' : 'var(--text-secondary)', fontWeight: 'bold' }}>{probabilities.draw}%</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#b339ff' }}></div>
-                            <span style={{ color: isAwayMax ? 'var(--brand-neon)' : '#fff', fontWeight: 'bold' }}>
-                              {translateTeamName(selectedMatch.away)} {isAwayMax && '🔥'}
-                            </span>
-                          </div>
-                          <span style={{ color: isAwayMax ? 'var(--brand-neon)' : '#b339ff', fontWeight: 'bold' }}>{probabilities.awayWin}%</span>
-                        </div>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
+                    {aiInsight.rationale}
+                  </p>
+                </div>
+
+                {/* Probabilidades 1X2 Card */}
+                <div style={{
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '16px',
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
+                    <Activity size={18} color="var(--brand-neon)" />
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#fff', margin: 0 }}>Cálculo de Vitória (1X2)</h3>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
+                    <div style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Casa</div>
+                      <div style={{
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        color: winProbabilities.home >= 65 && winProbabilities.home === Math.max(winProbabilities.home, winProbabilities.draw, winProbabilities.away) ? 'var(--brand-neon)' : '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
+                      }}>
+                        {winProbabilities.home}%
+                        {winProbabilities.home >= 65 && winProbabilities.home === Math.max(winProbabilities.home, winProbabilities.draw, winProbabilities.away) && <span title="Probabilidade Quente">🔥</span>}
                       </div>
-                    );
-                  })()}
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Empate</div>
+                      <div style={{
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        color: winProbabilities.draw >= 65 && winProbabilities.draw === Math.max(winProbabilities.home, winProbabilities.draw, winProbabilities.away) ? 'var(--brand-neon)' : '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
+                      }}>
+                        {winProbabilities.draw}%
+                        {winProbabilities.draw >= 65 && winProbabilities.draw === Math.max(winProbabilities.home, winProbabilities.draw, winProbabilities.away) && <span title="Probabilidade Quente">🔥</span>}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Fora</div>
+                      <div style={{
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        color: winProbabilities.away >= 65 && winProbabilities.away === Math.max(winProbabilities.home, winProbabilities.draw, winProbabilities.away) ? 'var(--brand-neon)' : '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
+                      }}>
+                        {winProbabilities.away}%
+                        {winProbabilities.away >= 65 && winProbabilities.away === Math.max(winProbabilities.home, winProbabilities.draw, winProbabilities.away) && <span title="Probabilidade Quente">🔥</span>}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Row 2: Indicadores de Força Técnica, Gols & Handicaps */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               {/* Team Strengths and Forms */}
               <div style={{
                 background: 'var(--bg-surface)',
@@ -5209,10 +5223,10 @@ export default function AnalysisPage() {
 
                 {/* Home Team Strengths */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#fff' }}>{translateTeamName(selectedMatch.home)}</span>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginRight: '4px' }}>Forma:</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '110px' }} title={translateTeamName(selectedMatch.home)}>{translateTeamName(selectedMatch.home)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginRight: '2px' }}>Forma:</span>
                       {(selectedMatch.formHome || generateFormFromStrength(selectedMatch.home)).map((c, i) => renderFormBadge(c, i))}
                     </div>
                   </div>
@@ -5244,10 +5258,10 @@ export default function AnalysisPage() {
 
                 {/* Away Team Strengths */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#fff' }}>{translateTeamName(selectedMatch.away)}</span>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginRight: '4px' }}>Forma:</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '110px' }} title={translateTeamName(selectedMatch.away)}>{translateTeamName(selectedMatch.away)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginRight: '2px' }}>Forma:</span>
                       {(selectedMatch.formAway || generateFormFromStrength(selectedMatch.away)).map((c, i) => renderFormBadge(c, i))}
                     </div>
                   </div>
@@ -6096,16 +6110,17 @@ export default function AnalysisPage() {
                 </div>
               );
             })()}
-
-            </div>
         </div>
       )}
-    </div>
+  ) : (
+    renderAdvancedSearchUI()
   )}
-        </>
-      ) : (
-        renderAdvancedSearchUI()
-      )}
+
+
+
+
+
+
 
       {/* POPUP INTERATIVO DA CALCULADORA DE HANDICAP (ASIÁTICO E EUROPEU) */}
       {isHandicapModalOpen && selectedMatch && (() => {

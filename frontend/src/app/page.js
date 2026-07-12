@@ -961,19 +961,23 @@ export default function LandingPage() {
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Acesso total à dashboard</span>
+                <span>Previsões Poisson & xG (1X2, Gols, BTTS)</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Alertas +EV em tempo real</span>
+                <span>Calculadora Handicap Asiático & Europeu</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Modelagem Poisson & xG</span>
+                <span>Busca Avançada (Jogadores, Times, Árbitros)</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Calculadora Kelly & Arbitragem</span>
+                <span>H2H, Forma Recente & Indicadores de Força</span>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
+                <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
+                <span>Dashboard com oportunidades +EV</span>
               </li>
             </ul>
 
@@ -1037,19 +1041,27 @@ export default function LandingPage() {
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Tudo do plano grátis incluso</span>
+                <span>Tudo do Trial + acesso ilimitado</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Acesso recorrente ilimitado</span>
+                <span>Palpites IA com stake Kelly otimizado</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Relatórios e Histórico de Backtests</span>
+                <span>Gestão de Banca com gráficos de evolução</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
-                <span>Suporte Prioritário via WhatsApp</span>
+                <span>Backtesting com histórico completo</span>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
+                <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
+                <span>Scanner ao vivo de odds & Escanteios/Cartões</span>
+              </li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
+                <Check size={16} color="var(--brand-neon)" strokeWidth={3} />
+                <span>Projeções de Artilheiros por partida</span>
               </li>
             </ul>
 
@@ -1096,19 +1108,19 @@ export default function LandingPage() {
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="#0088cc" strokeWidth={3} />
-                <span>Alertas direto no celular via bot</span>
+                <span>Alertas +EV direto no celular via bot</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="#0088cc" strokeWidth={3} />
-                <span>Link direto para colocar a aposta</span>
+                <span>Sinais automáticos com odd, mercado e stake</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="#0088cc" strokeWidth={3} />
-                <span>Avisos sonoros de odds desreguladas</span>
+                <span>Relatórios e resumos de rodada</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#a1a1aa' }}>
                 <Check size={16} color="#0088cc" strokeWidth={3} />
-                <span>Acesso imediato pós-pagamento</span>
+                <span>Acesso imediato pós-pagamento via PIX</span>
               </li>
             </ul>
 
