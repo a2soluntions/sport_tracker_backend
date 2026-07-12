@@ -5871,8 +5871,8 @@ export default function AnalysisPage() {
                   </div>
 
                   <div style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                     gap: '12px', 
                     fontSize: '0.8rem', 
                     lineHeight: '1.4',
@@ -5881,39 +5881,39 @@ export default function AnalysisPage() {
                     paddingRight: '6px'
                   }}>
                     {/* Item 1: xG */}
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid var(--brand-neon)' }}>
-                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', marginBottom: '2px' }}>Expectativa de Gols (xG)</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{goalsInsight}</span>
+                    <div style={{ background: '#121217', border: '1px solid #1E1E24', padding: '12px', borderRadius: '12px', borderLeft: '4px solid var(--brand-neon)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', fontSize: '0.85rem' }}>⚽ Expectativa de Gols (xG)</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{goalsInsight}</span>
                     </div>
 
                     {/* Item 2: Corners */}
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #888' }}>
-                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', marginBottom: '2px' }}>Análise de Escanteios</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{cornersInsight}</span>
+                    <div style={{ background: '#121217', border: '1px solid #1E1E24', padding: '12px', borderRadius: '12px', borderLeft: '4px solid #888', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', fontSize: '0.85rem' }}>📐 Análise de Escanteios</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{cornersInsight}</span>
                     </div>
 
                     {/* Item 3: Aerial play */}
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #b339ff' }}>
-                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', marginBottom: '2px' }}>Jogo Aéreo e Bolas Paradas</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{aerialInsight}</span>
+                    <div style={{ background: '#121217', border: '1px solid #1E1E24', padding: '12px', borderRadius: '12px', borderLeft: '4px solid #b339ff', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', fontSize: '0.85rem' }}>🛡️ Jogo Aéreo e Bolas Paradas</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{aerialInsight}</span>
                     </div>
 
                     {/* Item 4: Conceded Goals / Defensive Consistency */}
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #ff3d00' }}>
-                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', marginBottom: '2px' }}>Desempenho Defensivo</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{defenseInsight}</span>
+                    <div style={{ background: '#121217', border: '1px solid #1E1E24', padding: '12px', borderRadius: '12px', borderLeft: '4px solid #ff3d00', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', fontSize: '0.85rem' }}>📉 Desempenho Defensivo</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{defenseInsight}</span>
                     </div>
 
                     {/* Item 5: Scoring minutes */}
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #00e676' }}>
-                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', marginBottom: '2px' }}>Minutos de Gols</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{goalsTimeInsight}</span>
+                    <div style={{ background: '#121217', border: '1px solid #1E1E24', padding: '12px', borderRadius: '12px', borderLeft: '4px solid #00e676', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', fontSize: '0.85rem' }}>⏱️ Minutos de Gols</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{goalsTimeInsight}</span>
                     </div>
 
                     {/* Item 6: Card minutes */}
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', borderLeft: '3px solid #ffea00' }}>
-                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', marginBottom: '2px' }}>Minutos de Disciplina (Cartões)</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{cardsTimeInsight}</span>
+                    <div style={{ background: '#121217', border: '1px solid #1E1E24', padding: '12px', borderRadius: '12px', borderLeft: '4px solid #ffea00', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span style={{ display: 'block', color: '#fff', fontWeight: 'bold', fontSize: '0.85rem' }}>🟨/🔴 Minutos de Disciplina (Cartões)</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{cardsTimeInsight}</span>
                     </div>
                   </div>
                 </div>
