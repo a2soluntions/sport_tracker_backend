@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   Calculator, Trophy, Zap, Activity, Info, BarChart2, Star, Shield, 
   HelpCircle, ArrowRight, Sparkles, TrendingUp, TrendingDown, RefreshCw, Calendar, 
-  Users, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, Clock
+  Users, ChevronLeft, ChevronRight, AlertCircle, AlertTriangle, Clock, Percent
 } from 'lucide-react';
 
 // Factorial helper for Poisson
