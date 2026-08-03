@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentRound, getStandings } from 'campeonato-brasileiro-api';
 import { createClient } from '@supabase/supabase-js';
+import { logApiCall } from '@/lib/apiLogger';
 
 const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_HOST = 'https://v3.football.api-sports.io';
@@ -52,6 +53,13 @@ async function setCachedData(cacheKey, data) {
     if (!sb) return;
     await sb.from('api_cache').upsert({ cache_key: cacheKey, payload: data, cached_at: new Date().toISOString() }, { onConflict: 'cache_key' });
   } catch (_) {}
+}
+
+async function fetchAndLog(url, endpointName) {
+  const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } });
+  const remaining = Number(res.headers.get('x-ratelimit-requests-remaining') ?? -1);
+  logApiCall(endpointName, remaining, false);
+  return res;
 }
 
 /**
@@ -225,49 +233,71 @@ const TEAM_STRENGTH = {
   // Clubes Brasileiros
   'Flamengo': 1.9,
   'Palmeiras': 1.8,
+  'Cruzeiro': 1.8,
   'Atletico Mineiro': 1.7,
   'Sao Paulo': 1.6,
   'Fluminense': 1.6,
   'Corinthians': 1.5,
   'Internacional': 1.6,
   'Gremio': 1.5,
+  'Botafogo': 1.6,
+  'Bahia': 1.5,
   'Santos': 1.4,
-  'Botafogo': 1.5,
-  'Bahia': 1.4,
-  'Cruzeiro': 1.5,
+  'Fortaleza': 1.4,
   'Atletico Goianiense': 1.3,
   'Red Bull Bragantino': 1.4,
   'Vasco da Gama': 1.3,
-  'Fortaleza': 1.4,
   'Ceara': 1.3,
   'Sport Recife': 1.2,
   'America Mineiro': 1.3,
   'Cuiaba': 1.2,
   'Goias': 1.2,
+  'Chapecoense': 1.0,
+  'Chapecoense-sc': 1.0,
+  'Mirassol': 1.1,
+  'Juventude': 1.2,
+  'Vitoria': 1.2,
+  'Operario': 1.1,
+  'Novorizontino': 1.2,
+  'Vila Nova': 1.1,
+  'CRB': 1.1,
+  'Itoano': 1.0,
+  'Guarani': 1.0,
+  'Ponte Preta': 1.1,
+  'Paysandu': 1.0,
+  'Avaí': 1.1,
+  'Coritiba': 1.2,
+  'Botafogo-sp': 1.0
 };
 
 /**
  * Retorna o xG base de um time pela tabela de força.
- * Se o time não for encontrado, usa um fallback baseado em hash estável
- * mas com range ajustado para ser mais realista (1.0-1.6 para times desconhecidos).
+ * Se o time não for encontrado, usa um fallback baseado em hash estável.
  */
 function getTeamBaseXG(teamName) {
   if (!teamName) return 1.2;
   
-  // Busca exata
+  // Normaliza o nome do time removendo sufixos de estado (-sc, -mg, -sp, etc)
+  const cleanName = teamName.replace(/-(sc|mg|sp|rj|rs|pr|ba|go|pe|ce|pa|ma|al|se|pb|rn|pi|am|ap|rr|ro|ac|ms|mt|to|df)$/i, '').trim();
+  
+  // Busca exata no nome original ou no limpo
+  if (TEAM_STRENGTH[cleanName] !== undefined) return TEAM_STRENGTH[cleanName];
   if (TEAM_STRENGTH[teamName] !== undefined) return TEAM_STRENGTH[teamName];
   
   // Busca parcial (case-insensitive)
-  const upper = teamName.toUpperCase();
+  const upperClean = cleanName.toUpperCase();
+  const upperOrig = teamName.toUpperCase();
+  
   for (const [key, val] of Object.entries(TEAM_STRENGTH)) {
-    if (upper.includes(key.toUpperCase()) || key.toUpperCase().includes(upper)) {
+    const kUpper = key.toUpperCase();
+    if (upperClean.includes(kUpper) || kUpper.includes(upperClean) || upperOrig.includes(kUpper) || kUpper.includes(upperOrig)) {
       return val;
     }
   }
   
   // Fallback: hash estável com range conservador (1.0-1.6) para times desconhecidos
   let h = 0;
-  const s = upper;
+  const s = upperClean;
   for (let i = 0; i < s.length; i++) {
     h = s.charCodeAt(i) + ((h << 5) - h);
   }
@@ -326,7 +356,7 @@ async function fetchCurrentRoundFixtures(leagueId, activeSeason, nowTimestamp) {
   try {
     // Buscar a rodada atual em UMA única requisição (current=true)
     const roundUrl = `${API_HOST}/fixtures/rounds?league=${leagueId}&season=${activeSeason}&current=true`;
-    const roundRes = await fetch(roundUrl, { headers: { 'x-apisports-key': API_KEY } });
+    const roundRes = await fetchAndLog(roundUrl, '/fixtures/rounds');
     const roundData = await roundRes.json();
     resolvedRound = roundData.response?.[0] || null;
 
@@ -335,7 +365,7 @@ async function fetchCurrentRoundFixtures(leagueId, activeSeason, nowTimestamp) {
     if (resolvedRound) url += `&round=${encodeURIComponent(resolvedRound)}`;
     else url += `&next=10`; // fallback: próximos 10 jogos
 
-    const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } });
+    const res = await fetchAndLog(url, '/fixtures');
     const data = await res.json();
 
     if (!data.errors || Object.keys(data.errors).length === 0) {
@@ -406,7 +436,7 @@ async function getApiSportsStandings(leagueId, season) {
   
   try {
     const url = `${API_HOST}/standings?league=${leagueId}&season=${season}`;
-    const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } });
+    const res = await fetchAndLog(url, '/standings');
     const data = await res.json();
     const standings = data.response?.[0]?.league?.standings?.[0] || [];
     
@@ -501,6 +531,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const leagueId = searchParams.get('league') || '71';
+    const targetRound = searchParams.get('round');
     
     // Get target date or default to today's date in America/Sao_Paulo timezone
     const targetDate = searchParams.get('date') || (() => {
@@ -519,7 +550,7 @@ export async function GET(request) {
 
     const season = process.env.API_FOOTBALL_SEASON || '2024';
     const isPaidPlan = season === '2026';
-    const returnAll = searchParams.get('all') === 'true';
+    const returnAll = searchParams.get('all') === 'true' || !!targetRound;
 
     // Determinar a temporada ativa correspondente com base no ano da data de destino
     const dateObj = new Date(targetDate + 'T00:00:00-03:00');
@@ -545,12 +576,27 @@ export async function GET(request) {
       } else {
         try {
           const url = `${API_HOST}/fixtures?date=${targetDate}&timezone=America/Sao_Paulo`;
-          const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } });
+          const res = await fetchAndLog(url, '/fixtures');
           const data = await res.json();
           if (data.errors && Object.keys(data.errors).length > 0) {
             console.error(`[API-Sports] Erro retornado pela API para a data ${targetDate}:`, data.errors);
           }
-          const ALLOWED_LEAGUE_IDS = [1, 71, 72, 75, 13, 12, 39, 140, 135, 78, 3, 848, 44, 667, 94];
+          const ALLOWED_LEAGUE_IDS = [
+            // Brasil
+            71, 72, 75, 76, 73, 475, 476, 604, 609, 602,
+            // Sul-Americanas e Américas
+            13, 12, 11, 44, 128, 169, 281, 350, 242, 268, 274, 344, 357, 262,
+            // Europa - Demais
+            94, 88, 89, 144, 203, 179, 197, 218, 113, 103, 119, 235, 333, 332, 172,
+            // Competições Europeias
+            2, 3, 848, 531,
+            // América do Norte
+            253,
+            // Internacionais
+            1, 4, 5, 10, 667, 15, 29, 32,
+            // Ásia e Outras
+            292, 307, 188, 17
+          ];
           matches = (data.response || []).filter(m => {
             if (!m.fixture || !m.league) return false;
             if (['CANC', 'ABD', 'AWD', 'WO'].includes(m.fixture.status.short)) return false;
@@ -698,26 +744,34 @@ export async function GET(request) {
         matchesOfSeason = result.matches;
         fromCache = result.fromCache;
       } else {
-        // Verificar cache L1 + L2 antes de chamar a API
-        const cachedSeason = await getCachedData(fixturesCacheKey);
+        const leagueDateCacheKey = `league_${leagueId}_date_${targetDate}`;
+        const cachedSeason = await getCachedData(leagueDateCacheKey);
         if (cachedSeason) {
           matchesOfSeason = cachedSeason.data;
           fromCache = true;
         } else if (await isBudgetExceeded()) {
-          matchesOfSeason = memCache.fixtures[fixturesCacheKey]?.data || [];
+          matchesOfSeason = memCache.fixtures[leagueDateCacheKey]?.data || [];
           fromCache = true;
           console.log(`[Budget Guard] Brasileirão API request bypassed to cache.`);
         } else {
           try {
-            const url = `${API_HOST}/fixtures?league=${leagueId}&season=${activeSeason}&timezone=America/Sao_Paulo`;
-            const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } });
-            const data = await res.json();
+            let url = `${API_HOST}/fixtures?league=${leagueId}&season=${activeSeason}&date=${targetDate}&timezone=America/Sao_Paulo`;
+            let res = await fetchAndLog(url, '/fixtures');
+            let data = await res.json();
+
+            // Se retornar vazio para a temporada 2026, tenta buscar diretamente por data da liga
+            if ((!data.response || data.response.length === 0) && !data.errors?.rateLimit) {
+              url = `${API_HOST}/fixtures?league=${leagueId}&date=${targetDate}&timezone=America/Sao_Paulo`;
+              res = await fetchAndLog(url, '/fixtures');
+              data = await res.json();
+            }
+
             matchesOfSeason = (data.response || []).filter(m => !['CANC', 'PST', 'ABD', 'AWD', 'WO'].includes(m.fixture.status.short));
-            await setCachedData(fixturesCacheKey, matchesOfSeason);
+            await setCachedData(leagueDateCacheKey, matchesOfSeason);
           } catch (err) {
             console.warn(`[API-Sports] Erro ao buscar Brasileirão da API:`, err);
-            matchesOfSeason = memCache.fixtures[fixturesCacheKey]?.data || [];
-            fromCache = !!memCache.fixtures[fixturesCacheKey];
+            matchesOfSeason = memCache.fixtures[leagueDateCacheKey]?.data || [];
+            fromCache = !!memCache.fixtures[leagueDateCacheKey];
           }
         }
       }
@@ -741,43 +795,72 @@ export async function GET(request) {
     }
 
     // ==========================================
-    // OUTRAS LIGAS OU BRASILEIRÃO VIA API-SPORTS
+    // TODAS AS LIGAS (REGRA ÚNICA BASEADA EM DATA)
     // ==========================================
     let matches = [];
     if (apiSportsFixtures.length > 0) {
       matches = apiSportsFixtures;
     } else {
-      if (returnAll) {
+      if (targetRound) {
+        // Busca partidas de uma rodada específica na API-Sports
+        const roundQuery = isNaN(targetRound) ? targetRound : `Regular Season - ${targetRound}`;
+        const roundCacheKey = `league_${leagueId}_round_${targetRound}_${activeSeason}`;
+        const cachedRound = await getCachedData(roundCacheKey);
+        if (cachedRound) {
+          matches = cachedRound.data;
+          fromCache = true;
+        } else {
+          try {
+            const url = `${API_HOST}/fixtures?league=${leagueId}&season=${activeSeason}&round=${encodeURIComponent(roundQuery)}&timezone=America/Sao_Paulo`;
+            const res = await fetchAndLog(url, '/fixtures');
+            const data = await res.json();
+            matches = (data.response || []).filter(m => !['CANC', 'PST', 'ABD', 'AWD', 'WO'].includes(m.fixture.status.short));
+            await setCachedData(roundCacheKey, matches);
+          } catch (err) {
+            console.warn(`[API-Sports] Erro ao buscar rodada ${targetRound}:`, err);
+          }
+        }
+      } else if (returnAll) {
         const result = await fetchCurrentRoundFixtures(leagueId, activeSeason, nowTimestamp);
         matches = result.matches;
         fromCache = result.fromCache;
       } else {
-        // Verificar cache L1 + L2 antes de chamar a API
-        const cachedLeague = await getCachedData(fixturesCacheKey);
-        if (cachedLeague) {
-          matches = cachedLeague.data;
+        // Cache único por liga + data de destino
+        const leagueDateCacheKey = `league_${leagueId}_date_${targetDate}`;
+        const cachedLeagueDate = await getCachedData(leagueDateCacheKey);
+        if (cachedLeagueDate) {
+          matches = cachedLeagueDate.data;
           fromCache = true;
         } else if (await isBudgetExceeded()) {
-          matches = memCache.fixtures[fixturesCacheKey]?.data || [];
+          matches = memCache.fixtures[leagueDateCacheKey]?.data || [];
           fromCache = true;
-          console.log(`[Budget Guard] League ${leagueId} API request bypassed to cache.`);
+          console.log(`[Budget Guard] League ${leagueId} date ${targetDate} API request bypassed to cache.`);
         } else {
           try {
-            const url = `${API_HOST}/fixtures?league=${leagueId}&season=${activeSeason}&timezone=America/Sao_Paulo`;
-            const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } });
-            const data = await res.json();
-            if (data.errors && Object.keys(data.errors).length > 0) {
-              console.error(`[API-Sports] Erro retornado pela API para a liga ${leagueId}:`, data.errors);
-              matches = memCache.fixtures[fixturesCacheKey]?.data || [];
-              fromCache = !!memCache.fixtures[fixturesCacheKey];
+            // Tenta primeiro com temporada + data
+            let url = `${API_HOST}/fixtures?league=${leagueId}&season=${activeSeason}&date=${targetDate}&timezone=America/Sao_Paulo`;
+            let res = await fetchAndLog(url, '/fixtures');
+            let data = await res.json();
+
+            // Se der erro ou se retornar vazio por incompatibilidade de temporada, faz a busca estrita por data da liga
+            if ((!data.response || data.response.length === 0) && !data.errors?.rateLimit) {
+              url = `${API_HOST}/fixtures?league=${leagueId}&date=${targetDate}&timezone=America/Sao_Paulo`;
+              res = await fetchAndLog(url, '/fixtures');
+              data = await res.json();
+            }
+
+            if (data.errors && Object.keys(data.errors).length > 0 && !data.response) {
+              console.error(`[API-Sports] Erro retornado pela API para a liga ${leagueId} data ${targetDate}:`, data.errors);
+              matches = memCache.fixtures[leagueDateCacheKey]?.data || [];
+              fromCache = !!memCache.fixtures[leagueDateCacheKey];
             } else {
               matches = (data.response || []).filter(m => !['CANC', 'PST', 'ABD', 'AWD', 'WO'].includes(m.fixture.status.short));
-              await setCachedData(fixturesCacheKey, matches);
+              await setCachedData(leagueDateCacheKey, matches);
             }
           } catch (err) {
-            console.warn(`[API-Sports] Erro ao buscar fixtures da liga ${leagueId} temporada ${activeSeason}:`, err);
-            matches = memCache.fixtures[fixturesCacheKey]?.data || [];
-            fromCache = !!memCache.fixtures[fixturesCacheKey];
+            console.warn(`[API-Sports] Erro ao buscar fixtures da liga ${leagueId} data ${targetDate}:`, err);
+            matches = memCache.fixtures[leagueDateCacheKey]?.data || [];
+            fromCache = !!memCache.fixtures[leagueDateCacheKey];
           }
         }
       }
@@ -848,6 +931,7 @@ export async function GET(request) {
         awayTeamId: m.teams.away.id,
         date: displayDate,
         rawDate: rawDate,
+        matchTime: localTimeStr,
         dayCategory: getDayCategory(rawDate),
         round: m.league.round ? m.league.round.replace('Regular Season - ', '') : '?',
         home: homeTeamName,
@@ -859,6 +943,7 @@ export async function GET(request) {
         goalsHome: m.goals.home ?? 0,
         goalsAway: m.goals.away ?? 0,
         status: statusLabel,
+        rawStatus: m.fixture.status.short,
         isLive,
         isFinished,
         minute: m.fixture.status.elapsed || 0,
@@ -874,13 +959,11 @@ export async function GET(request) {
     let apiSportsRound = '?';
 
     if (returnAll) {
-      // Já buscamos apenas as partidas da rodada atual via API-Sports ou scraper
       if (filteredFixtures.length > 0) {
         apiSportsRound = filteredFixtures[0].round;
       }
     } else {
-      // Filter matches by the local date (America/Sao_Paulo)
-      filteredFixtures = formattedFixtures.filter(f => f.rawDate === targetDate);
+      // Como a consulta à API-Sports já usou &date=targetDate&timezone=America/Sao_Paulo, aceita os jogos retornados
       if (filteredFixtures.length > 0) {
         apiSportsRound = filteredFixtures[0].round;
       }
@@ -894,7 +977,8 @@ export async function GET(request) {
       fixtures: filteredFixtures, 
       round: apiSportsRound,
       season: parseInt(activeSeason),
-      fromCache: fromCache 
+      fromCache: fromCache,
+      apiBlocked: _apiBlockedManually || _budgetExceeded
     });
 
   } catch (error) {

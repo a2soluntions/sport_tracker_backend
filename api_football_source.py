@@ -104,14 +104,14 @@ def coletar_odds_pre_jogo_api(ligas_alvo_ids):
             print("    -> Sem odds disponíveis na API para esta partida.")
             continue
                 
-                bookmakers = response_list[0].get("bookmakers", [])
-                
-                # Procura odds da Betano (ID 32)
-                bm_selecionado = None
-                for bm in bookmakers:
-                    if bm["id"] == 32 or bm["name"].lower() == "betano":
-                        bm_selecionado = bm
-                        break
+        bookmakers = response_list[0].get("bookmakers", [])
+        
+        # Procura odds da Betano (ID 32)
+        bm_selecionado = None
+        for bm in bookmakers:
+            if bm["id"] == 32 or bm["name"].lower() == "betano":
+                bm_selecionado = bm
+                break
                 
                 # Fallbacks caso Betano não esteja disponível
                 if not bm_selecionado:

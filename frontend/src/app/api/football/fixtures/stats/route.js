@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logApiCall } from '@/lib/apiLogger';
 
 const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_HOST = 'https://v3.football.api-sports.io';
@@ -33,6 +34,9 @@ export async function GET(request) {
       },
       next: { revalidate: 60 } // Next.js fetch cache
     });
+
+    const remaining = Number(res.headers.get('x-ratelimit-requests-remaining') ?? -1);
+    logApiCall('/fixtures/statistics', remaining, false);
 
     if (!res.ok) {
       throw new Error(`Erro HTTP ${res.status}`);
@@ -87,6 +91,8 @@ export async function GET(request) {
         },
         next: { revalidate: 60 }
       });
+      const remainingPlayers = Number(playersRes.headers.get('x-ratelimit-requests-remaining') ?? -1);
+      logApiCall('/fixtures/players', remainingPlayers, false);
       if (playersRes.ok) {
         const playersData = await playersRes.json();
         const teams = playersData.response || [];

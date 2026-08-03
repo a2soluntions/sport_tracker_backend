@@ -45,10 +45,10 @@ export default function AppContent({ children }) {
     }
   }, []);
 
-  // Redirecionar usuário logado da raiz '/' para o dashboard
+  // Redirecionar usuário logado da raiz '/' para estatísticas (/estatisticas)
   useEffect(() => {
     if (!loading && user && pathname === '/') {
-      router.push('/dashboard');
+      router.push('/estatisticas');
     }
   }, [user, loading, pathname, router]);
 

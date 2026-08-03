@@ -220,33 +220,9 @@ export default function Sidebar() {
         </div>
         
         <nav className={styles.nav}>
-          <Link href="/dashboard" className={`${styles.navItem} ${pathname === '/dashboard' ? styles.navItemActive : ''}`}>
-            <Zap size={20} className={styles.navIcon} /> 
-            <span>Alertas +EV</span>
-          </Link>
-          <Link href="/calculator" className={`${styles.navItem} ${pathname === '/calculator' ? styles.navItemActive : ''}`}>
+          <Link href="/estatisticas" className={`${styles.navItem} ${pathname === '/estatisticas' ? styles.navItemActive : ''}`}>
             <Activity size={20} className={styles.navIcon} /> 
-            <span>A2score</span>
-          </Link>
-          <Link href="/backtest" className={`${styles.navItem} ${pathname === '/backtest' ? styles.navItemActive : ''}`}>
-            <TrendingUp size={20} className={styles.navIcon} /> 
-            <span>Resultados</span>
-          </Link>
-          <Link href="/palpites" className={`${styles.navItem} ${pathname === '/palpites' ? styles.navItemActive : ''}`}>
-            <Trophy size={20} className={styles.navIcon} /> 
-            <span>Palpites</span>
-          </Link>
-          <Link href="/banca" className={`${styles.navItem} ${pathname === '/banca' ? styles.navItemActive : ''}`}>
-            <PiggyBank size={20} className={styles.navIcon} /> 
-            <span>Carteira (Banca)</span>
-          </Link>
-          <Link href="/notifications" className={`${styles.navItem} ${pathname === '/notifications' ? styles.navItemActive : ''}`}>
-            <Bell size={20} className={`${styles.navIcon} ${hasUpdate || hasNewAlert ? 'bell-blink' : ''}`} /> 
-            <span>Notificações</span>
-          </Link>
-          <Link href="/settings" className={`${styles.navItem} ${pathname === '/settings' ? styles.navItemActive : ''}`}>
-            <Settings size={20} className={styles.navIcon} /> 
-            <span>Configurações</span>
+            <span>Estatísticas</span>
           </Link>
           {user && (user.role === 'super_admin' || user.role === 'admin') && (
             <Link href="/admin" className={`${styles.navItem} ${pathname === '/admin' ? styles.navItemActive : ''}`}>
@@ -340,32 +316,13 @@ export default function Sidebar() {
       </aside>
 
       <nav className={styles.bottomNav}>
-        {user && (user.role === 'admin' || user.role === 'super_admin') ? (
+        {user && (user.role === 'admin' || user.role === 'super_admin') && (
           <Link href="/admin" className={`${styles.bottomNavItem} ${pathname === '/admin' ? styles.bottomNavItemActive : ''}`} title="Admin">
             <ShieldCheck size={20} className={styles.bottomNavIcon} color="var(--brand-neon)" />
           </Link>
-        ) : (
-          <Link href="/dashboard" className={`${styles.bottomNavItem} ${pathname === '/dashboard' ? styles.bottomNavItemActive : ''}`} title="Alertas">
-            <Zap size={20} className={styles.bottomNavIcon} />
-          </Link>
         )}
-        <Link href="/calculator" className={`${styles.bottomNavItem} ${pathname === '/calculator' ? styles.bottomNavItemActive : ''}`} title="A2score">
+        <Link href="/estatisticas" className={`${styles.bottomNavItem} ${pathname === '/estatisticas' ? styles.bottomNavItemActive : ''}`} title="Estatísticas">
           <Activity size={20} className={styles.bottomNavIcon} />
-        </Link>
-        <Link href="/palpites" className={`${styles.bottomNavItem} ${pathname === '/palpites' ? styles.bottomNavItemActive : ''}`} title="Palpites">
-          <Trophy size={20} className={styles.bottomNavIcon} />
-        </Link>
-        <Link href="/backtest" className={`${styles.bottomNavItem} ${pathname === '/backtest' ? styles.bottomNavItemActive : ''}`} title="Relatório">
-          <TrendingUp size={20} className={styles.bottomNavIcon} />
-        </Link>
-        <Link href="/banca" className={`${styles.bottomNavItem} ${pathname === '/banca' ? styles.bottomNavItemActive : ''}`} title="Carteira">
-          <PiggyBank size={20} className={styles.bottomNavIcon} />
-        </Link>
-        <Link href="/notifications" className={`${styles.bottomNavItem} ${pathname === '/notifications' ? styles.bottomNavItemActive : ''}`} title="Notificações">
-          <Bell size={20} className={`${styles.bottomNavIcon} ${hasUpdate || hasNewAlert ? 'bell-blink' : ''}`} />
-        </Link>
-        <Link href="/settings" className={`${styles.bottomNavItem} ${pathname === '/settings' ? styles.bottomNavItemActive : ''}`} title="Configurações">
-          <Settings size={20} className={styles.bottomNavIcon} />
         </Link>
       </nav>
     </>

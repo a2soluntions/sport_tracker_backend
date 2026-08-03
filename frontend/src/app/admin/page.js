@@ -2950,26 +2950,91 @@ _Gestão de banca é o segredo do longo prazo!_ 🛡️`);
                         return;
                       }
                       const predefined = [
-                        { id: '71', name: 'Série A' },
-                        { id: '72', name: 'Série B' },
-                        { id: '75', name: 'Série C' },
+                        // Brasil
+                        { id: '71', name: 'Brasileirão Série A' },
+                        { id: '72', name: 'Brasileirão Série B' },
+                        { id: '75', name: 'Brasileirão Série C' },
+                        { id: '76', name: 'Brasileirão Série D' },
                         { id: '73', name: 'Copa do Brasil' },
-                        { id: '13', name: 'Libertadores' },
-                        { id: '12', name: 'Sulamericana' },
+                        { id: '475', name: 'Campeonato Carioca' },
+                        { id: '476', name: 'Campeonato Paulista' },
+                        { id: '604', name: 'Campeonato Gaúcho' },
+                        { id: '609', name: 'Campeonato Mineiro' },
+                        { id: '602', name: 'Copa do Nordeste' },
+                        // Competições Sul-Americanas
+                        { id: '13', name: 'Copa Libertadores' },
+                        { id: '12', name: 'Copa Sulamericana' },
+                        { id: '11', name: 'Copa América' },
+                        // Europa - Top 5 Ligas
                         { id: '39', name: 'Premier League' },
+                        { id: '40', name: 'Championship (ENG)' },
+                        { id: '41', name: 'League One (ENG)' },
+                        { id: '42', name: 'League Two (ENG)' },
+                        { id: '45', name: 'FA Cup' },
+                        { id: '48', name: 'League Cup (ENG)' },
                         { id: '140', name: 'La Liga' },
-                        { id: '135', name: 'Serie A' },
+                        { id: '141', name: 'La Liga 2' },
+                        { id: '143', name: 'Copa del Rey' },
+                        { id: '135', name: 'Serie A (Itália)' },
+                        { id: '136', name: 'Serie B (Itália)' },
+                        { id: '137', name: 'Coppa Italia' },
                         { id: '78', name: 'Bundesliga' },
+                        { id: '79', name: '2. Bundesliga' },
+                        { id: '81', name: 'DFB Pokal' },
                         { id: '61', name: 'Ligue 1' },
+                        { id: '62', name: 'Ligue 2' },
+                        { id: '66', name: 'Coupe de France' },
+                        // Europa - Demais
                         { id: '94', name: 'Liga Portugal' },
                         { id: '88', name: 'Eredivisie' },
+                        { id: '89', name: 'Eerste Divisie (HOL)' },
+                        { id: '144', name: 'Jupiler Pro League (BEL)' },
+                        { id: '203', name: 'Super Lig (Turquia)' },
+                        { id: '179', name: 'Premiership (Escócia)' },
+                        { id: '197', name: 'Super League (Suíça)' },
+                        { id: '218', name: 'Tipp3 Bundesliga (Áustria)' },
+                        { id: '113', name: 'Allsvenskan (Suécia)' },
+                        { id: '103', name: 'Eliteserien (Noruega)' },
+                        { id: '119', name: 'Superligaen (Dinamarca)' },
+                        { id: '235', name: 'Russian Premier League' },
+                        { id: '333', name: 'Ekstraklasa (Polônia)' },
+                        { id: '332', name: 'Super League (Grécia)' },
+                        { id: '207', name: 'Super Lig (Suécia)' },
+                        // Competições Europeias
                         { id: '2', name: 'Champions League' },
                         { id: '3', name: 'Europa League' },
                         { id: '848', name: 'Conference League' },
-                        { id: '1', name: 'Copa do Mundo' },
+                        { id: '531', name: 'Super Copa UEFA' },
+                        // Américas
                         { id: '44', name: 'Liga Argentina' },
-                        { id: '10', name: 'Amistosos de Seleções' }
-                      ];
+                        { id: '128', name: 'Liga MX (México)' },
+                        { id: '239', name: 'MLS (EUA)' },
+                        { id: '253', name: 'Major League Soccer' },
+                        { id: '262', name: 'Liga MX Copa' },
+                        { id: '169', name: 'LPF (Colômbia)' },
+                        { id: '281', name: 'Liga Chilena' },
+                        { id: '274', name: 'Liga Paraguaia' },
+                        { id: '268', name: 'Liga Peruana' },
+                        { id: '242', name: 'Liga Equatoriana' },
+                        { id: '350', name: 'Liga Uruguaia' },
+                        { id: '344', name: 'Liga Boliviana' },
+                        { id: '357', name: 'Liga Venezuelana' },
+                        // Internacionais
+                        { id: '1', name: 'Copa do Mundo' },
+                        { id: '4', name: 'Euro Championship' },
+                        { id: '5', name: 'UEFA Nations League' },
+                        { id: '10', name: 'Amistosos de Seleções' },
+                        { id: '667', name: 'Amistosos Internacionais' },
+                        { id: '15', name: 'Copa Africana de Nações' },
+                        { id: '29', name: 'Copa da Ásia' },
+                        { id: '32', name: 'Copa Ouro CONCACAF' },
+                        // Ásia e Outras
+                        { id: '169', name: 'J-League (Japão)' },
+                        { id: '292', name: 'K-League (Coreia do Sul)' },
+                        { id: '307', name: 'Saudi Pro League' },
+                        { id: '188', name: 'A-League (Austrália)' },
+                        { id: '17', name: 'AFC Champions League' },
+                        ];
                       const selected = predefined.find(l => l.id === val);
                       if (selected) {
                         setNovaLigaNome(selected.name);
@@ -2989,25 +3054,102 @@ _Gestão de banca é o segredo do longo prazo!_ 🛡️`);
                     }}
                   >
                     <option value="">— Selecionar Liga Pronta —</option>
-                    <option value="71">Série A (Brasil) [ID: 71]</option>
-                    <option value="72">Série B (Brasil) [ID: 72]</option>
-                    <option value="75">Série C (Brasil) [ID: 75]</option>
-                    <option value="73">Copa do Brasil [ID: 73]</option>
-                    <option value="13">Libertadores [ID: 13]</option>
-                    <option value="12">Sulamericana [ID: 12]</option>
-                    <option value="39">Premier League (Inglaterra) [ID: 39]</option>
-                    <option value="140">La Liga (Espanha) [ID: 140]</option>
-                    <option value="135">Serie A (Itália) [ID: 135]</option>
-                    <option value="78">Bundesliga (Alemanha) [ID: 78]</option>
-                    <option value="61">Ligue 1 (França) [ID: 61]</option>
-                    <option value="94">Liga Portugal [ID: 94]</option>
-                    <option value="88">Eredivisie (Holanda) [ID: 88]</option>
-                    <option value="2">Champions League [ID: 2]</option>
-                    <option value="3">Europa League [ID: 3]</option>
-                    <option value="848">Conference League [ID: 848]</option>
-                    <option value="1">Copa do Mundo [ID: 1]</option>
-                    <option value="44">Liga Argentina [ID: 44]</option>
-                    <option value="10">Amistosos de Seleções [ID: 10]</option>
+                    <optgroup label="🇧🇷 Brasil">
+                      <option value="71">Brasileirão Série A [ID: 71]</option>
+                      <option value="72">Brasileirão Série B [ID: 72]</option>
+                      <option value="75">Brasileirão Série C [ID: 75]</option>
+                      <option value="76">Brasileirão Série D [ID: 76]</option>
+                      <option value="73">Copa do Brasil [ID: 73]</option>
+                      <option value="475">Campeonato Carioca [ID: 475]</option>
+                      <option value="476">Campeonato Paulista [ID: 476]</option>
+                      <option value="604">Campeonato Gaúcho [ID: 604]</option>
+                      <option value="609">Campeonato Mineiro [ID: 609]</option>
+                      <option value="602">Copa do Nordeste [ID: 602]</option>
+                    </optgroup>
+                    <optgroup label="🌎 Sul-Americanas">
+                      <option value="13">Copa Libertadores [ID: 13]</option>
+                      <option value="12">Copa Sulamericana [ID: 12]</option>
+                      <option value="11">Copa América [ID: 11]</option>
+                      <option value="44">Liga Argentina [ID: 44]</option>
+                      <option value="128">Liga MX (México) [ID: 128]</option>
+                      <option value="169">LPF (Colômbia) [ID: 169]</option>
+                      <option value="281">Liga Chilena [ID: 281]</option>
+                      <option value="350">Liga Uruguaia [ID: 350]</option>
+                      <option value="242">Liga Equatoriana [ID: 242]</option>
+                      <option value="268">Liga Peruana [ID: 268]</option>
+                      <option value="274">Liga Paraguaia [ID: 274]</option>
+                      <option value="344">Liga Boliviana [ID: 344]</option>
+                      <option value="357">Liga Venezuelana [ID: 357]</option>
+                    </optgroup>
+                    <optgroup label="🏴 Inglaterra">
+                      <option value="39">Premier League [ID: 39]</option>
+                      <option value="40">Championship [ID: 40]</option>
+                      <option value="41">League One [ID: 41]</option>
+                      <option value="42">League Two [ID: 42]</option>
+                      <option value="45">FA Cup [ID: 45]</option>
+                      <option value="48">League Cup [ID: 48]</option>
+                    </optgroup>
+                    <optgroup label="🇪🇸 Espanha">
+                      <option value="140">La Liga [ID: 140]</option>
+                      <option value="141">La Liga 2 [ID: 141]</option>
+                      <option value="143">Copa del Rey [ID: 143]</option>
+                    </optgroup>
+                    <optgroup label="🇮🇹 Itália">
+                      <option value="135">Serie A [ID: 135]</option>
+                      <option value="136">Serie B [ID: 136]</option>
+                      <option value="137">Coppa Italia [ID: 137]</option>
+                    </optgroup>
+                    <optgroup label="🇩🇪 Alemanha">
+                      <option value="78">Bundesliga [ID: 78]</option>
+                      <option value="79">2. Bundesliga [ID: 79]</option>
+                      <option value="81">DFB Pokal [ID: 81]</option>
+                    </optgroup>
+                    <optgroup label="🇫🇷 França">
+                      <option value="61">Ligue 1 [ID: 61]</option>
+                      <option value="62">Ligue 2 [ID: 62]</option>
+                      <option value="66">Coupe de France [ID: 66]</option>
+                    </optgroup>
+                    <optgroup label="🌍 Europa - Demais">
+                      <option value="94">Liga Portugal [ID: 94]</option>
+                      <option value="88">Eredivisie (Holanda) [ID: 88]</option>
+                      <option value="89">Eerste Divisie (Holanda) [ID: 89]</option>
+                      <option value="144">Jupiler Pro League (Bélgica) [ID: 144]</option>
+                      <option value="203">Super Lig (Turquia) [ID: 203]</option>
+                      <option value="179">Premiership (Escócia) [ID: 179]</option>
+                      <option value="197">Super League (Suíça) [ID: 197]</option>
+                      <option value="218">Bundesliga (Áustria) [ID: 218]</option>
+                      <option value="113">Allsvenskan (Suécia) [ID: 113]</option>
+                      <option value="103">Eliteserien (Noruega) [ID: 103]</option>
+                      <option value="119">Superligaen (Dinamarca) [ID: 119]</option>
+                      <option value="235">Russian Premier League [ID: 235]</option>
+                      <option value="333">Ekstraklasa (Polônia) [ID: 333]</option>
+                      <option value="332">Super League (Grécia) [ID: 332]</option>
+                    </optgroup>
+                    <optgroup label="🏆 Competições Europeias">
+                      <option value="2">Champions League [ID: 2]</option>
+                      <option value="3">Europa League [ID: 3]</option>
+                      <option value="848">Conference League [ID: 848]</option>
+                      <option value="531">Super Copa UEFA [ID: 531]</option>
+                    </optgroup>
+                    <optgroup label="🇺🇸 América do Norte">
+                      <option value="253">MLS (EUA) [ID: 253]</option>
+                    </optgroup>
+                    <optgroup label="🌐 Internacionais">
+                      <option value="1">Copa do Mundo [ID: 1]</option>
+                      <option value="4">Euro Championship [ID: 4]</option>
+                      <option value="5">UEFA Nations League [ID: 5]</option>
+                      <option value="10">Amistosos de Seleções [ID: 10]</option>
+                      <option value="667">Amistosos Internacionais [ID: 667]</option>
+                      <option value="15">Copa Africana de Nações [ID: 15]</option>
+                      <option value="29">Copa da Ásia [ID: 29]</option>
+                      <option value="32">Copa Ouro CONCACAF [ID: 32]</option>
+                    </optgroup>
+                    <optgroup label="⚽ Ásia e Outras">
+                      <option value="292">K-League (Coreia) [ID: 292]</option>
+                      <option value="307">Saudi Pro League [ID: 307]</option>
+                      <option value="188">A-League (Austrália) [ID: 188]</option>
+                      <option value="17">AFC Champions League [ID: 17]</option>
+                    </optgroup>
                     <option value="custom">Outra (Digitar ID Manual)</option>
                   </select>
                 </div>

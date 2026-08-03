@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 
 // Rate limiter simplificado em memória utilizando as APIs nativas Edge do Next.js
 const rateLimitMap = new Map();
-
-// Limpar o cache de IPs a cada 1 minuto para economizar memória e resetar o limite
-setInterval(() => {
-  rateLimitMap.clear();
-}, 60 * 1000);
+let lastReset = Date.now();
 
 export function middleware(request) {
+  // Limpar o cache de IPs a cada 1 minuto para economizar memória e resetar o limite sem usar setInterval (incompatível com o Edge Runtime)
+  if (Date.now() - lastReset > 60 * 1000) {
+    rateLimitMap.clear();
+    lastReset = Date.now();
+  }
   // Aplicar Rate Limiting apenas nas rotas de API
   if (request.nextUrl.pathname.startsWith('/api/')) {
     // Obter o IP do cliente através dos cabeçalhos da Vercel/Cloudflare ou padrão

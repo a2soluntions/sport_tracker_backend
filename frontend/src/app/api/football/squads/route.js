@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logApiCall } from '@/lib/apiLogger';
 
 const API_KEY = process.env.API_FOOTBALL_KEY;
 
@@ -33,6 +34,8 @@ export async function GET(request) {
     // (verificar também o cache pelo nome antes de chamar a API)
     if (!resolvedTeamId) {
       const searchRes = await fetch(`https://v3.football.api-sports.io/teams?search=${encodeURIComponent(teamName)}`, { headers });
+      const searchRemaining = Number(searchRes.headers.get('x-ratelimit-requests-remaining') ?? -1);
+      logApiCall('/teams', searchRemaining, false);
       const searchData = await searchRes.json();
       
       if (searchData.response && searchData.response.length > 0) {
@@ -56,6 +59,8 @@ export async function GET(request) {
 
     // Buscar o elenco atualizado do time
     const squadRes = await fetch(`https://v3.football.api-sports.io/players/squads?team=${resolvedTeamId}`, { headers });
+    const squadRemaining = Number(squadRes.headers.get('x-ratelimit-requests-remaining') ?? -1);
+    logApiCall('/players/squads', squadRemaining, false);
     const squadData = await squadRes.json();
 
     if (!squadData.response || squadData.response.length === 0) {

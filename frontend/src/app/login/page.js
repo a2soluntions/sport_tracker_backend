@@ -27,7 +27,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (user) {
       const searchParams = new URLSearchParams(window.location.search);
-      const redirect = searchParams.get('redirect') || '/dashboard';
+      const redirect = searchParams.get('redirect') || '/estatisticas';
       router.push(redirect);
     }
   }, [user, router]);
@@ -78,7 +78,7 @@ export default function LoginPage() {
           setSuccessMsg(res.message || 'Cadastro realizado com sucesso! Entrando...');
           setTimeout(() => {
             const searchParams = new URLSearchParams(window.location.search);
-            const redirect = searchParams.get('redirect') || '/dashboard';
+            const redirect = searchParams.get('redirect') || '/estatisticas';
             router.push(redirect);
           }, 2000);
         } else {
@@ -88,7 +88,7 @@ export default function LoginPage() {
         const res = await login(email, password);
         if (res.success) {
           const searchParams = new URLSearchParams(window.location.search);
-          const redirect = searchParams.get('redirect') || '/dashboard';
+          const redirect = searchParams.get('redirect') || '/estatisticas';
           router.push(redirect);
         } else {
           setError(res.error || 'Credenciais inválidas.');
@@ -141,7 +141,7 @@ export default function LoginPage() {
       await signUp(demoEmail, demoPassword, demoName, true);
       await login(demoEmail, demoPassword, true);
       const searchParams = new URLSearchParams(window.location.search);
-      const redirect = searchParams.get('redirect') || '/dashboard';
+      const redirect = searchParams.get('redirect') || '/estatisticas';
       router.push(redirect);
     } catch (err) {
       setError('Não foi possível inicializar a demonstração.');
@@ -595,7 +595,7 @@ export default function LoginPage() {
               const res = await loginWithGoogle();
               if (res.success) {
                 const searchParams = new URLSearchParams(window.location.search);
-                const redirect = searchParams.get('redirect') || '/dashboard';
+                const redirect = searchParams.get('redirect') || '/estatisticas';
                 router.push(redirect);
               } else {
                 setError(res.error || 'Falha ao entrar com o Google.');
