@@ -1027,6 +1027,61 @@ const getMockMatches = (dateStr) => {
       sourceLeagueId: "281",
       formHome: ["V", "E", "V", "V", "D"],
       formAway: ["D", "V", "E", "D", "V"]
+    },
+
+    // --- EQUADOR - LIGA PRO SERIE A (242) ---
+    {
+      id: "ecu_1",
+      home: "LDU Quito",
+      away: "Barcelona SC",
+      homeTeamId: 1160,
+      awayTeamId: 1165,
+      league: "Liga Pro Serie A",
+      round: "Rodada 14",
+      date: "04/08 • 20:00",
+      rawDate: dateStr,
+      homeLogo: "https://media.api-sports.io/football/teams/1160.png",
+      awayLogo: "https://media.api-sports.io/football/teams/1165.png",
+      homeXG: 1.8,
+      awayXG: 1.2,
+      goalsHome: 1,
+      goalsAway: 0,
+      status: "Em Andamento ⚽ 62'",
+      isLive: true,
+      minute: 62,
+      isFinished: false,
+      venue: "Estadio Rodrigo Paz Delgado",
+      homePosition: 1,
+      awayPosition: 3,
+      sourceLeagueId: "242",
+      formHome: ["V", "V", "E", "V", "V"],
+      formAway: ["V", "D", "V", "E", "V"]
+    },
+    {
+      id: "ecu_2",
+      home: "Independiente del Valle",
+      away: "CS Emelec",
+      homeTeamId: 1162,
+      awayTeamId: 1164,
+      league: "Liga Pro Serie A",
+      round: "Rodada 14",
+      date: "04/08 • 21:30",
+      rawDate: dateStr,
+      homeLogo: "https://media.api-sports.io/football/teams/1162.png",
+      awayLogo: "https://media.api-sports.io/football/teams/1164.png",
+      homeXG: 2.1,
+      awayXG: 0.9,
+      goalsHome: 0,
+      goalsAway: 0,
+      status: "Não Iniciado",
+      isLive: false,
+      isFinished: false,
+      venue: "Estadio Banco Guayaquil",
+      homePosition: 2,
+      awayPosition: 5,
+      sourceLeagueId: "242",
+      formHome: ["V", "V", "V", "E", "D"],
+      formAway: ["E", "V", "D", "V", "E"]
     }
   ];
 };
@@ -2137,6 +2192,11 @@ export default function AnalysisPage() {
     'Equador': 'https://flagcdn.com/w40/ec.png',
     'Colômbia': 'https://flagcdn.com/w40/co.png',
     'Chile': 'https://flagcdn.com/w40/cl.png',
+    'Brasil': 'https://flagcdn.com/w40/br.png',
+    'Argentina': 'https://flagcdn.com/w40/ar.png',
+    'Equador': 'https://flagcdn.com/w40/ec.png',
+    'Colômbia': 'https://flagcdn.com/w40/co.png',
+    'Chile': 'https://flagcdn.com/w40/cl.png',
     'México': 'https://flagcdn.com/w40/mx.png',
     'Escócia': 'https://flagcdn.com/w40/gb-sct.png',
     'Bulgária': 'https://flagcdn.com/w40/bg.png',
@@ -2159,6 +2219,8 @@ export default function AnalysisPage() {
     'Mundo': 'https://media.api-sports.io/football/leagues/1.png'
   };
 
+  const [showOnlyLive, setShowOnlyLive] = useState(false);
+
   useEffect(() => {
     document.title = "A2 Score - Central Esportiva";
     const formatter = new Intl.DateTimeFormat('pt-BR', {
@@ -2174,20 +2236,25 @@ export default function AnalysisPage() {
     setCurrentDate(`${year}-${month}-${day}`);
   }, []);
 
-  const fetchMatches = async (dateStr) => {
+  const fetchMatches = async (dateStr, isLiveFilter = showOnlyLive) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/football/fixtures?league=all&date=${dateStr}`);
+      const endpoint = isLiveFilter 
+        ? `/api/football/fixtures?live=true`
+        : `/api/football/fixtures?league=all&date=${dateStr}`;
+      const response = await fetch(endpoint);
       if (!response.ok) throw new Error('API respondente falhou');
       const data = await response.json();
       if (data.fixtures && data.fixtures.length > 0) {
         setFixtures(data.fixtures);
       } else {
-        setFixtures(getMockMatches(dateStr));
+        const mockList = getMockMatches(dateStr);
+        setFixtures(isLiveFilter ? mockList.filter(f => f.isLive) : mockList);
       }
     } catch (err) {
       console.warn("Erro ao buscar fixtures reais, usando fallback demonstrativo:", err);
-      setFixtures(getMockMatches(dateStr));
+      const mockList = getMockMatches(dateStr);
+      setFixtures(isLiveFilter ? mockList.filter(f => f.isLive) : mockList);
     } finally {
       setLoading(false);
     }
@@ -2195,9 +2262,14 @@ export default function AnalysisPage() {
 
   useEffect(() => {
     if (currentDate) {
-      fetchMatches(currentDate);
+      fetchMatches(currentDate, showOnlyLive);
     }
-  }, [currentDate]);
+  }, [currentDate, showOnlyLive]);
+
+  // Contagem total de partidas ao vivo
+  const totalLiveMatchesCount = useMemo(() => {
+    return fixtures.filter(f => f.isLive).length;
+  }, [fixtures]);
 
   // Agrupamento por países com ligas e contagem de jogos
   const countriesData = useMemo(() => {
@@ -2228,17 +2300,33 @@ export default function AnalysisPage() {
     return list;
   }, [fixtures]);
 
-  // Filtro por busca
-  const filteredCountries = countriesData.filter(country => 
-    country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    country.leagues.some(l => l.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filtro por busca e por status ao vivo
+  const filteredCountries = useMemo(() => {
+    return countriesData
+      .map(country => {
+        if (showOnlyLive) {
+          const liveLeagues = country.leagues.filter(l => l.live > 0);
+          if (liveLeagues.length === 0) return null;
+          return { ...country, leagues: liveLeagues };
+        }
+        return country;
+      })
+      .filter(Boolean)
+      .filter(country => 
+        country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        country.leagues.some(l => l.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+  }, [countriesData, searchTerm, showOnlyLive]);
 
   // Jogos da liga selecionada
   const activeLeagueMatches = useMemo(() => {
     if (!selectedLeagueId) return [];
-    return fixtures.filter(f => String(f.sourceLeagueId) === String(selectedLeagueId));
-  }, [fixtures, selectedLeagueId]);
+    let list = fixtures.filter(f => String(f.sourceLeagueId) === String(selectedLeagueId));
+    if (showOnlyLive) {
+      list = list.filter(f => f.isLive);
+    }
+    return list;
+  }, [fixtures, selectedLeagueId, showOnlyLive]);
 
   // Detalhes da Liga Selecionada
   const selectedLeagueInfo = useMemo(() => {
@@ -2301,23 +2389,49 @@ export default function AnalysisPage() {
           </p>
         </div>
 
-        {/* Date Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#121217', padding: '6px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <button 
-            onClick={() => changeDate(-1)} 
-            style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        {/* Date & Live Filter Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Botão de Filtro Ao Vivo Pulsante */}
+          <button
+            onClick={() => setShowOnlyLive(!showOnlyLive)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: showOnlyLive ? 'rgba(239, 68, 68, 0.25)' : '#121217',
+              color: showOnlyLive ? '#ef4444' : '#ffffff',
+              border: `1px solid ${showOnlyLive ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+              padding: '7px 14px',
+              borderRadius: '10px',
+              fontSize: '0.84rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: showOnlyLive ? '0 0 12px rgba(239,68,68,0.4)' : 'none'
+            }}
           >
-            <ChevronLeft size={16} color="var(--brand-neon)" />
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+            🔴 JOGOS AO VIVO {totalLiveMatchesCount > 0 ? `(${totalLiveMatchesCount})` : ''}
           </button>
-          <span style={{ fontSize: '0.88rem', fontWeight: 'bold', color: '#fff', minWidth: '110px', textAlign: 'center' }}>
-            📅 {currentDate && new Date(currentDate + 'T00:00:00-03:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-          </span>
-          <button 
-            onClick={() => changeDate(1)} 
-            style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-          >
-            <ChevronRight size={16} color="var(--brand-neon)" />
-          </button>
+
+          {/* Date Selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#121217', padding: '6px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <button 
+              onClick={() => changeDate(-1)} 
+              style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <ChevronLeft size={16} color="var(--brand-neon)" />
+            </button>
+            <span style={{ fontSize: '0.88rem', fontWeight: 'bold', color: '#fff', minWidth: '110px', textAlign: 'center' }}>
+              📅 {currentDate && new Date(currentDate + 'T00:00:00-03:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+            </span>
+            <button 
+              onClick={() => changeDate(1)} 
+              style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <ChevronRight size={16} color="var(--brand-neon)" />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -532,6 +532,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const leagueId = searchParams.get('league') || '71';
     const targetRound = searchParams.get('round');
+    const isLiveOnly = searchParams.get('live') === 'true' || searchParams.get('status') === 'live';
     
     // Get target date or default to today's date in America/Sao_Paulo timezone
     const targetDate = searchParams.get('date') || (() => {
@@ -547,6 +548,67 @@ export async function GET(request) {
       const year = parts.find(p => p.type === 'year').value;
       return `${year}-${month}-${day}`;
     })();
+
+    // ── BUSCA DIRETA DE JOGOS AO VIVO (LIVE=ALL) ──────────────────────────────────
+    if (isLiveOnly) {
+      try {
+        const url = `${API_HOST}/fixtures?live=all&timezone=America/Sao_Paulo`;
+        const res = await fetchAndLog(url, '/fixtures-live');
+        const data = await res.json();
+        const rawList = data.response || [];
+
+        const ALLOWED_LEAGUE_IDS = [
+          71, 72, 75, 76, 73, 475, 476, 604, 609, 602,
+          13, 12, 11, 44, 128, 169, 281, 350, 242, 268, 274, 344, 357, 262,
+          94, 88, 89, 144, 203, 179, 197, 218, 113, 103, 119, 235, 333, 332, 172,
+          2, 3, 848, 531, 253, 1, 4, 5, 10, 667, 15, 29, 32, 292, 307, 188, 17
+        ];
+
+        const formatted = rawList
+          .filter(m => m.fixture && m.league && ALLOWED_LEAGUE_IDS.includes(Number(m.league.id)))
+          .map((m) => {
+            const isFinished = ['FT', 'AET', 'PEN'].includes(m.fixture.status.short);
+            const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE', 'INPLAY'].includes(m.fixture.status.short);
+            const statusLabel = isLive ? `Em Andamento ⚽ ${m.fixture.status.elapsed}'` : isFinished ? 'Finalizado' : 'Não Iniciado';
+            const homeXG = calcMatchXG(m.teams.home.name, m.teams.away.name);
+            const awayXG = calcMatchXG(m.teams.away.name, m.teams.home.name);
+            const dateObj = new Date(m.fixture.date);
+            const localTimeStr = dateObj.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+            const localDateStr = dateObj.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short' }).replace('.', '');
+
+            return {
+              id: m.fixture.id,
+              homeTeamId: m.teams.home.id,
+              awayTeamId: m.teams.away.id,
+              date: `${localDateStr} • ${localTimeStr}`,
+              rawDate: targetDate,
+              dayCategory: 'hoje',
+              round: m.league.round ? m.league.round.replace('Regular Season - ', '') : '?',
+              home: m.teams.home.name,
+              away: m.teams.away.name,
+              homeLogo: m.teams.home.logo,
+              awayLogo: m.teams.away.logo,
+              homeXG,
+              awayXG,
+              goalsHome: m.goals.home ?? 0,
+              goalsAway: m.goals.away ?? 0,
+              status: statusLabel,
+              isLive: true,
+              isFinished: false,
+              minute: m.fixture.status.elapsed || 0,
+              venue: m.fixture.venue?.name || '',
+              homePosition: '-',
+              awayPosition: '-',
+              sourceLeagueId: String(m.league.id),
+              league: m.league.name
+            };
+          });
+
+        return NextResponse.json({ fixtures: formatted, count: formatted.length, isLiveEndpoint: true });
+      } catch (err) {
+        console.warn('[API-Sports] Erro ao buscar live fixtures:', err);
+      }
+    }
 
     const season = process.env.API_FOOTBALL_SEASON || '2024';
     const isPaidPlan = season === '2026';
@@ -646,7 +708,7 @@ export async function GET(request) {
 
       const formattedFixtures = filteredApiMatches.map((m) => {
         const isFinished = ['FT', 'AET', 'PEN'].includes(m.fixture.status.short);
-        const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT'].includes(m.fixture.status.short);
+        const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE', 'INPLAY'].includes(m.fixture.status.short);
         let statusLabel = isLive ? `Em Andamento ⚽ ${m.fixture.status.elapsed}'` : isFinished ? 'Finalizado' : 'Não Iniciado';
 
         // xG calculado com base na força real de cada time (tabela TEAM_STRENGTH + fator do adversário)
@@ -871,7 +933,7 @@ export async function GET(request) {
 
     let formattedFixtures = matches.map((m) => {
       const isFinished = ['FT', 'AET', 'PEN'].includes(m.fixture.status.short);
-      const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT'].includes(m.fixture.status.short);
+      const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE', 'INPLAY'].includes(m.fixture.status.short);
       let statusLabel = isLive ? `Em Andamento ⚽ ${m.fixture.status.elapsed}'` : isFinished ? 'Finalizado' : 'Não Iniciado';
 
       // Calcular xG dinâmico usando estatísticas da classificação (dados reais)
