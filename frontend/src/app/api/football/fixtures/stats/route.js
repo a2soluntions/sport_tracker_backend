@@ -4,20 +4,21 @@ import { logApiCall } from '@/lib/apiLogger';
 const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_HOST = 'https://v3.football.api-sports.io';
 
-// Cache global em memória para as estatísticas
+// Cache global em memória para as estatísticas (10s para ao vivo, 2m para pré-jogo)
 const statsCache = {};
-const CACHE_DURATION = 3 * 60 * 1000; // 3 minutos (reduz chamadas mas mantém atualização suficiente para jogos ao vivo)
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const fixtureId = searchParams.get('fixture');
+  const fixtureId = searchParams.get('fixture') || searchParams.get('fixtureId');
+  const isLiveReq = searchParams.get('isLive') === 'true' || searchParams.get('live') === 'true';
 
   if (!fixtureId) {
     return NextResponse.json({ error: 'Parâmetro fixture é obrigatório' }, { status: 400 });
   }
 
+  const cacheDuration = isLiveReq ? 10 * 1000 : 2 * 60 * 1000; // 10s ao vivo (zero delay)
   const now = Date.now();
-  if (statsCache[fixtureId] && (now - statsCache[fixtureId].timestamp) < CACHE_DURATION) {
+  if (statsCache[fixtureId] && (now - statsCache[fixtureId].timestamp) < cacheDuration) {
     return NextResponse.json({ ...statsCache[fixtureId].data, fromCache: true });
   }
 
@@ -32,7 +33,7 @@ export async function GET(request) {
         'x-apisports-key': API_KEY,
         'x-apisports-host': 'v3.football.api-sports.io'
       },
-      next: { revalidate: 60 } // Next.js fetch cache
+      cache: 'no-store'
     });
 
     const remaining = Number(res.headers.get('x-ratelimit-requests-remaining') ?? -1);
